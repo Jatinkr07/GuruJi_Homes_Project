@@ -1,3 +1,4 @@
+/* eslint-disable no-irregular-whitespace */
 import { motion } from "framer-motion";
 import { MapPin, Phone } from "lucide-react";
 
@@ -32,8 +33,8 @@ export default function DetailCard() {
             </motion.div>
             <div>
               <h3 className="mb-2 text-xl font-[500]">Location</h3>
-              <p>123 Dream Street</p>
-              <p>Cityville, State 12345</p>
+              <p>Avenue 64, BPTP Park -81, </p>
+              <p>Sector-81,Greater Faridabad</p>
             </div>
           </div>
         </motion.div>
@@ -53,8 +54,8 @@ export default function DetailCard() {
             </motion.div>
             <div>
               <h3 className="mb-2 text-xl font-[500]">Contact</h3>
-              <p>(123) 456-7890</p>
-              <p>info@dreamhome.com</p>
+              <p>+91 9540274407</p>
+              <p>Info.gurujihomes@gmail.com</p>
             </div>
           </div>
         </motion.div>

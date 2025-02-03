@@ -1,3 +1,4 @@
+/* eslint-disable no-irregular-whitespace */
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -64,8 +65,8 @@ const Footer = () => {
           <div>
             <h3 className="mb-4 text-lg font-semibold">Contact</h3>
             <ul className="space-y-2">
-              <li>123 Building Street, City, Country</li>
-              <li>Phone: +1 (123) 456-7890</li>
+              <li>Avenue 64, BPTP Park -81, Sector-81,Greater Faridabad</li>
+              <li>Phone: +91 9540274407 </li>
             </ul>
           </div>
         </div>
