@@ -1,134 +1,133 @@
-/* eslint-disable no-unused-vars */
 import { useState } from "react";
 import { Table, Button, Space, message, Tag } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import CategoriesForm from "../Form/CategoryForm";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  fetchCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+} from "../../services/api.js";
+import CategoryForm from "../Form/CategoryForm.jsx";
 
 const Categories = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [formData, setFormData] = useState(null);
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
 
-  const mockData = [
-    {
-      key: "1",
-      name: "Electronics",
-      subcategory: "Mobile Phones",
-      image: "https://source.unsplash.com/random/100x100?electronics",
-      status: "active",
-      createdAt: "2023-01-15T10:30:00Z",
+  const { data: categories, isLoading } = useQuery({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: createCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["categories"]);
+      message.success("Category created successfully");
     },
-    {
-      key: "2",
-      name: "Clothing",
-      subcategory: "Men's Wear",
-      image: "https://source.unsplash.com/random/100x100?clothing",
-      status: "inactive",
-      createdAt: "2023-06-20T14:45:00Z",
+    onError: (error) => {
+      message.error(
+        error.response?.data?.message || "Failed to create category"
+      );
     },
-    {
-      key: "3",
-      name: "Furniture",
-      subcategory: "Living Room",
-      image: "https://source.unsplash.com/random/100x100?furniture",
-      status: "active",
-      createdAt: "2024-02-10T09:15:00Z",
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: updateCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["categories"]);
+      message.success("Category updated successfully");
     },
-  ];
+    onError: (error) => {
+      message.error(
+        error.response?.data?.message || "Failed to update category"
+      );
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["categories"]);
+      message.success("Category deleted successfully");
+    },
+    onError: (error) => {
+      message.error(
+        error.response?.data?.message || "Failed to delete category"
+      );
+    },
+  });
 
   const columns = [
     {
       title: "Serial No.",
-      dataIndex: "key",
-      width: "10%",
-      render: (text, _, index) => index + 1,
+      render: (_, __, index) => index + 1,
     },
     {
       title: "Category",
       dataIndex: "name",
-      width: "20%",
       sorter: (a, b) => a.name.localeCompare(b.name),
-      searchable: true,
     },
     {
-      title: "Subcategory",
-      dataIndex: "subcategory",
-      width: "20%",
-      sorter: (a, b) => a.subcategory.localeCompare(b.subcategory),
+      title: "Subcategories",
+      dataIndex: "subCategories",
+      render: (subCategories) => subCategories.map((sc) => sc.name).join(", "),
     },
     {
       title: "Status",
       dataIndex: "status",
-      width: "15%",
       render: (status) => (
         <Tag color={status === "active" ? "success" : "error"}>
           {status.toUpperCase()}
         </Tag>
       ),
-      filters: [
-        { text: "Active", value: "active" },
-        { text: "Inactive", value: "inactive" },
-      ],
-      onFilter: (value, record) => record.status === value,
     },
     {
       title: "Created At",
       dataIndex: "createdAt",
-      width: "15%",
       render: (date) => new Date(date).toLocaleDateString(),
-      sorter: (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     },
     {
       title: "Image",
       dataIndex: "image",
-      width: "15%",
       render: (image) => (
         <img
-          src={image}
+          src={`http://localhost:6001/${image}`}
           alt="category"
-          className="object-cover w-16 h-16 transition-shadow rounded shadow-sm hover:shadow-md"
+          className="object-cover w-16 h-16"
         />
       ),
     },
     {
       title: "Action",
-      key: "action",
       render: (_, record) => (
-        <Space size="middle">
+        <Space>
           <Button
             type="text"
             icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-            className="transition-colors hover:text-blue-500"
+            onClick={() => {
+              setFormData(record);
+              setIsModalVisible(true);
+            }}
           />
           <Button
             type="text"
             danger
             icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.key)}
-            className="transition-colors hover:text-red-500"
+            onClick={() => deleteMutation.mutate(record._id)}
           />
         </Space>
       ),
     },
   ];
 
-  const handleEdit = (record) => {
-    setFormData(record);
-    setIsModalVisible(true);
-  };
-
-  const handleDelete = (key) => {
-    setLoading(true);
-    setTimeout(() => {
-      message.success("Category deleted successfully");
-      setLoading(false);
-    }, 500);
-  };
-
-  const handleFormFinish = () => {
+  const handleFormFinish = (formData) => {
+    if (formData.get("id")) {
+      updateMutation.mutate({ id: formData.get("id"), formData });
+    } else {
+      createMutation.mutate(formData);
+    }
     setIsModalVisible(false);
     setFormData(null);
   };
@@ -140,11 +139,7 @@ const Categories = () => {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={() => {
-            setFormData(null);
-            setIsModalVisible(true);
-          }}
-          loading={loading}
+          onClick={() => setIsModalVisible(true)}
         >
           Add Category
         </Button>
@@ -152,22 +147,12 @@ const Categories = () => {
 
       <Table
         columns={columns}
-        dataSource={mockData}
-        rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
-        pagination={{
-          total: mockData.length,
-          pageSize: 10,
-          showSizeChanger: true,
-          showQuickJumper: true,
-          showTotal: (total) => `Total ${total} items`,
-        }}
-        loading={loading}
-        scroll={{ x: 1000 }}
-        size="middle"
-        bordered
+        dataSource={categories}
+        loading={isLoading}
+        pagination={{ pageSize: 10 }}
       />
 
-      <CategoriesForm
+      <CategoryForm
         visible={isModalVisible}
         onCancel={() => {
           setIsModalVisible(false);

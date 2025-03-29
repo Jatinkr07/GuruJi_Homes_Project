@@ -1,5 +1,7 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/jsx-key */
 /* eslint-disable react/prop-types */
-import { Modal, Form, Input, Upload, Select, message } from "antd";
+import { Modal, Form, Input, Upload, Select } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useState } from "react";
 
@@ -7,33 +9,39 @@ const { Option } = Select;
 
 const CategoryForm = ({ visible, onCancel, initialValues, onFinish }) => {
   const [form] = Form.useForm();
-  const [fileList, setFileList] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [fileList, setFileList] = useState(
+    initialValues?.image
+      ? [{ uid: "-1", url: `http://localhost:6001/${initialValues.image}` }]
+      : []
+  );
 
   const uploadProps = {
-    onRemove: (file) => {
-      const index = fileList.indexOf(file);
-      const newFileList = fileList.slice();
-      newFileList.splice(index, 1);
-      setFileList(newFileList);
-    },
+    onRemove: () => setFileList([]),
     beforeUpload: (file) => {
-      setFileList([...fileList, file]);
+      setFileList([file]);
       return false;
     },
     fileList,
   };
 
   const handleFinish = (values) => {
-    setLoading(true);
-    setTimeout(() => {
-      console.log("Success:", values);
-      form.resetFields();
-      setFileList([]);
-      message.success("Category saved successfully");
-      setLoading(false);
-      onFinish();
-    }, 500);
+    const formData = new FormData();
+    formData.append("name", values.name);
+    // formData.append("status", values.status);
+    if (fileList[0]?.originFileObj) {
+      formData.append("image", fileList[0].originFileObj);
+    }
+    formData.append(
+      "subCategories",
+      JSON.stringify(values.subCategories || [])
+    );
+    if (initialValues?._id) {
+      formData.append("id", initialValues._id);
+    }
+
+    onFinish(formData);
+    form.resetFields();
+    setFileList([]);
   };
 
   return (
@@ -47,7 +55,6 @@ const CategoryForm = ({ visible, onCancel, initialValues, onFinish }) => {
         setFileList([]);
       }}
       width={600}
-      confirmLoading={loading}
     >
       <Form
         form={form}
@@ -63,15 +70,71 @@ const CategoryForm = ({ visible, onCancel, initialValues, onFinish }) => {
           <Input />
         </Form.Item>
 
-        <Form.Item
-          name="subcategory"
-          label="Subcategory"
-          rules={[{ required: true, message: "Please input subcategory!" }]}
-        >
-          <Input />
-        </Form.Item>
+        <Form.List name="subCategories">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map(({ key, name, ...restField }) => (
+                <div key={key} style={{ marginBottom: 16 }}>
+                  <Form.Item
+                    {...restField}
+                    name={[name, "name"]}
+                    label="Subcategory Name"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input subcategory name!",
+                      },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                  <Upload
+                    {...uploadProps}
+                    name={`subCategories[${name}].image`}
+                  >
+                    <button>
+                      <UploadOutlined /> Upload Subcategory Image
+                    </button>
+                  </Upload>
+                  <Form.List name={[name, "subSubCategories"]}>
+                    {(subFields, { add: addSub, remove: removeSub }) => (
+                      <>
+                        {subFields.map(
+                          ({ key: subKey, name: subName, ...subRestField }) => (
+                            <Form.Item
+                              {...subRestField}
+                              name={[subName, "name"]}
+                              label="Sub-subcategory Name"
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please input sub-subcategory name!",
+                                },
+                              ]}
+                            >
+                              <Input />
+                            </Form.Item>
+                          )
+                        )}
+                        <button type="button" onClick={() => addSub()}>
+                          Add Sub-subcategory
+                        </button>
+                      </>
+                    )}
+                  </Form.List>
+                  <button type="button" onClick={() => remove(name)}>
+                    Remove Subcategory
+                  </button>
+                </div>
+              ))}
+              <button type="button" onClick={() => add()}>
+                Add Subcategory
+              </button>
+            </>
+          )}
+        </Form.List>
 
-        <Form.Item
+        {/* <Form.Item
           name="status"
           label="Status"
           rules={[{ required: true, message: "Please select status!" }]}
@@ -80,14 +143,16 @@ const CategoryForm = ({ visible, onCancel, initialValues, onFinish }) => {
             <Option value="active">Active</Option>
             <Option value="inactive">Inactive</Option>
           </Select>
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item
           name="image"
           label="Image"
-          rules={[{ required: true, message: "Please upload an image!" }]}
+          rules={[
+            { required: !initialValues, message: "Please upload an image!" },
+          ]}
         >
-          <Upload {...uploadProps} listType="picture-card">
+          <Upload {...uploadProps}>
             {fileList.length >= 1 ? null : (
               <div>
                 <UploadOutlined />

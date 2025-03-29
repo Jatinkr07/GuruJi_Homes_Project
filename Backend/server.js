@@ -5,6 +5,12 @@ import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 connectDB();
@@ -22,17 +28,7 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-// app.options("/api/auth/login", (req, res) => {
-//   console.log("Handling OPTIONS for /api/auth/login");
-//   res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
-//   res.setHeader("Access-Control-Allow-Credentials", "true");
-//   res.setHeader(
-//     "Access-Control-Allow-Methods",
-//     "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-//   );
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-//   res.sendStatus(204);
-// });
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -41,6 +37,7 @@ app.use(
 );
 
 app.use("/api/auth", authRoutes);
+app.use("/api/categories", categoryRoutes);
 
 const PORT = process.env.PORT || 6001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

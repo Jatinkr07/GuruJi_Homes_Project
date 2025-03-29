@@ -8,17 +8,10 @@ const api = axios.create({
   },
 });
 
+//Admin Start-----
 export const loginUser = async ({ username, password }) => {
   try {
-    console.log(
-      "SENDING TO BACKEND --->",
-      { username, password },
-      {
-        headers: { "Content-Type": "application/json" },
-      }
-    );
     const response = await api.post("/api/auth/login", { username, password });
-    console.log("Login response:", response.data);
     if (response.data.message === "Login successful") {
       return true;
     } else {
@@ -48,3 +41,28 @@ export const getCurrentUser = async () => {
     throw new Error(error.response?.data?.message || "Failed to fetch user");
   }
 };
+
+//Admin End------
+
+//Category Start-----
+export const fetchCategories = async () => {
+  const { data } = await api.get("/api/categories");
+  return data;
+};
+
+export const createCategory = async (formData) => {
+  const { data } = await api.post("api//categories", formData);
+  return data;
+};
+
+export const updateCategory = async ({ id, formData }) => {
+  const { data } = await api.put(`api//categories/${id}`, formData);
+  return data;
+};
+
+export const deleteCategory = async (id) => {
+  const { data } = await api.delete(`api//categories/${id}`);
+  return data;
+};
+
+//Category End-----
