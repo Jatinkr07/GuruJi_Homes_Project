@@ -1,11 +1,13 @@
 import { motion, useScroll } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { ChevronDown } from "lucide-react";
 
 export default function Navbar() {
   const { scrollY } = useScroll();
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [projectsOpen, setProjectsOpen] = useState(false);
 
   useEffect(() => {
     return scrollY.onChange((latest) => {
@@ -16,6 +18,18 @@ export default function Navbar() {
   const toggleMenu = () => {
     setMenuOpen((prev) => !prev);
   };
+
+  const toggleProjects = () => {
+    setProjectsOpen((prev) => !prev);
+  };
+
+  const projectItems = [
+    { name: "Residential", path: "/projects/project1" },
+    { name: "Commercial", path: "/projects/project2" },
+    { name: "Industrial", path: "/projects/project3" },
+    { name: "OnGoing", path: "/projects/project3" },
+    { name: "Completed", path: "/projects/project3" },
+  ];
 
   return (
     <motion.header
@@ -39,25 +53,37 @@ export default function Navbar() {
         <div className="items-center hidden space-x-8 md:flex">
           <Link
             to="/"
-            className="text-sm font-medium tracking-wider text-black transition-colors hover:text-gray-300"
+            className="py-1 text-sm font-medium tracking-wider text-black transition-colors hover:text-gray-300 hover:border-gray-400"
           >
             HOME
           </Link>
           <Link
             to="/aboutus"
-            className="text-sm font-medium tracking-wider text-black transition-colors hover:text-gray-300"
+            className="py-1 text-sm font-medium tracking-wider text-black transition-colors hover:text-gray-300 hover:border-gray-400"
           >
             ABOUT
           </Link>
-          <Link
-            to="/projects"
-            className="text-sm font-medium tracking-wider text-black transition-colors hover:text-gray-300"
-          >
-            PROJECTS
-          </Link>
+          <div className="relative group">
+            <div className="flex items-center py-1 text-sm font-medium tracking-wider text-black transition-colors cursor-pointer hover:text-gray-300 hover:border-gray-400">
+              PROJECTS
+              <ChevronDown className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:rotate-180" />
+            </div>
+            {/* Dropdown Menu */}
+            <div className="absolute left-0 invisible w-48 mt-2 overflow-hidden transition-all duration-200 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 group-hover:visible">
+              {projectItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className="block px-4 py-2 text-sm text-black transition-all hover:bg-gray-100 hover:border-l-4 hover:border-gray-400"
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+          </div>
           <Link
             to="/contactus"
-            className="text-sm font-medium tracking-wider text-black transition-colors hover:text-gray-300"
+            className="py-1 text-sm font-medium tracking-wider text-black transition-colors hover:text-gray-300 hover:border-gray-400"
           >
             CONTACT
           </Link>
@@ -91,28 +117,48 @@ export default function Navbar() {
           <div className="flex flex-col items-center space-y-4">
             <Link
               to="/"
-              className="text-sm font-medium tracking-wider transition-colors hover:text-gray-300"
+              className="w-full py-1 text-sm font-medium tracking-wider text-center transition-colors hover:text-gray-300 hover:border-r-4 hover:border-gray-400"
               onClick={toggleMenu}
             >
               HOME
             </Link>
             <Link
               to="/aboutus"
-              className="text-sm font-medium tracking-wider transition-colors hover:text-gray-300"
+              className="w-full py-1 text-sm font-medium tracking-wider text-center transition-colors hover:text-gray-300 hover:border-r-4 hover:border-gray-400"
               onClick={toggleMenu}
             >
               ABOUT
             </Link>
-            <Link
-              to="/projects"
-              className="text-sm font-medium tracking-wider transition-colors hover:text-gray-300"
-              onClick={toggleMenu}
-            >
-              PROJECTS
-            </Link>
+            <div className="w-full text-center">
+              <button
+                onClick={toggleProjects}
+                className="flex items-center justify-center w-full py-1 text-sm font-medium tracking-wider transition-colors hover:text-gray-300 hover:border-r-4 hover:border-gray-400"
+              >
+                PROJECTS
+                <ChevronDown
+                  className={`ml-1 h-4 w-4 transition-transform duration-200 ${
+                    projectsOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {projectsOpen && (
+                <div className="flex flex-col mt-2 space-y-2">
+                  {projectItems.map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.path}
+                      className="w-full py-1 text-sm text-center text-black transition-all hover:text-gray-300 hover:border-r-4 hover:border-gray-400"
+                      onClick={toggleMenu}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
             <Link
               to="/contactus"
-              className="text-sm font-medium tracking-wider transition-colors hover:text-gray-300"
+              className="w-full py-1 text-sm font-medium tracking-wider text-center transition-colors hover:text-gray-300 hover:border-r-4 hover:border-gray-400"
               onClick={toggleMenu}
             >
               CONTACT

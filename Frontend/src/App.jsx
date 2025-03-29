@@ -1,22 +1,75 @@
-import { Routes, Route } from "react-router-dom";
+/* eslint-disable react/prop-types */
+import { Routes, Route, Navigate } from "react-router-dom";
+import { ConfigProvider } from "antd";
+import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import HomePage from "./Pages/HomePage";
 import Layout from "./UI/Layout";
 import ProjectsPage from "./Pages/ProjectsPage";
 import AboutPage from "./Pages/AboutPage";
 import ContactPage from "./Pages/ContactPage";
 import ScrollTop from "./components/hooks/ScrollTop";
+import "./index.css";
+import Login from "./Admin/Login";
+import MainLayout from "./Admin/Layout/MainLayout";
+import Dashboard from "./Admin/pages/Dashboard";
+import Categories from "./Admin/pages/Categories";
+import Products from "./Admin/pages/Products";
+import ProjectPage from "./Pages/Projects/ProjectPage.jsx";
+
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  console.log("isAuth", isAuthenticated, isLoading);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  return isAuthenticated ? <>{children}</> : <Navigate to="/admin/login" />;
+};
 
 const App = () => {
   ScrollTop();
   return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<HomePage />} />
-        <Route path="/projects" element={<ProjectsPage />} />
-        <Route path="/aboutus" element={<AboutPage />} />
-        <Route path="/contactus" element={<ContactPage />} />
-      </Route>
-    </Routes>
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: "#1677ff",
+        },
+      }}
+    >
+      <AuthProvider>
+        <Routes>
+          {/* Admin Routes */}
+          <Route path="/admin/login" element={<Login />} />
+          <Route
+            path="/admin/*"
+            element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="categories" element={<Categories />} />
+            <Route path="products" element={<Products />} />
+            <Route
+              path="*"
+              element={<Navigate to="/admin/dashboard" replace />}
+            />
+          </Route>
+
+          {/* regular site routes for UI */}
+          <Route path="/" element={<Layout />}>
+            <Route index element={<HomePage />} />
+            <Route path="/projects" element={<ProjectsPage />} />
+            <Route path="/aboutus" element={<AboutPage />} />
+            <Route path="/contactus" element={<ContactPage />} />
+            <Route path="/explore/projects" element={<ProjectPage />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </ConfigProvider>
   );
 };
 

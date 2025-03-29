@@ -1,6 +1,8 @@
 // import { Link } from "react-router-dom";
 // import { HiArrowLongRight } from "react-icons/hi2";
 
+import { Link } from "react-router-dom";
+
 const projects = [
   {
     title: "Commercial",
@@ -78,6 +80,14 @@ export default function ProjectBanner() {
               </div>
             </div>
           ))}
+        </div>
+        <div className="flex justify-center mt-8 ">
+          <Link to="/projects">
+            {" "}
+            <button className="px-3 py-2 text-white bg-black border-2 border-black hover:bg-white hover:text-black hover:border-2">
+              View More
+            </button>
+          </Link>
         </div>
       </div>
     </section>

@@ -1,8 +1,10 @@
 import About from "../components/Home/About";
+import Banner from "../components/Home/Banner";
 import DreamHome from "../components/Home/DreamHome";
+import ExploreProjects from "../components/Home/ExploreProjects";
 import Hero from "../components/Home/Hero";
 import OurBuilder from "../components/Home/OurBuilder";
-import ProjectBanner from "../components/Home/ProjectBanner";
+// import ProjectBanner from "../components/Home/ProjectBanner";
 import Testimonials from "../components/Home/Testimonials";
 
 const HomePage = () => {
@@ -10,7 +12,9 @@ const HomePage = () => {
     <div>
       <Hero />
       <About />
-      <ProjectBanner />
+      {/* <ProjectBanner /> */}
+      <Banner />
+      <ExploreProjects />
       <DreamHome />
       <OurBuilder />
       <Testimonials />
