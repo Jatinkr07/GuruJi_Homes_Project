@@ -12,9 +12,11 @@ import "./index.css";
 import Login from "./Admin/Login";
 import MainLayout from "./Admin/Layout/MainLayout";
 import Dashboard from "./Admin/pages/Dashboard";
-import Categories from "./Admin/pages/Categories";
 import Products from "./Admin/pages/Products";
 import ProjectPage from "./Pages/Projects/ProjectPage.jsx";
+import Builders from "./Admin/pages/Builders.jsx";
+import Types from "./Admin/pages/Types.jsx";
+import Statuses from "./Admin/pages/Statuses.jsx";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -51,7 +53,9 @@ const App = () => {
           >
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="categories" element={<Categories />} />
+            <Route path="builder" element={<Builders />} />
+            <Route path="types" element={<Types />} />
+            <Route path="status" element={<Statuses />} />
             <Route path="products" element={<Products />} />
             <Route
               path="*"

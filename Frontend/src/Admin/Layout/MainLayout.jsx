@@ -30,9 +30,19 @@ const MainLayout = () => {
       label: "Dashboard",
     },
     {
-      key: "/admin/categories",
+      key: "/admin/builder",
       icon: <AppstoreOutlined />,
-      label: "Categories",
+      label: "Builder",
+    },
+    {
+      key: "/admin/types",
+      icon: <AppstoreOutlined />,
+      label: "Types",
+    },
+    {
+      key: "/admin/status",
+      icon: <AppstoreOutlined />,
+      label: "Status",
     },
     { key: "/admin/products", icon: <ShoppingOutlined />, label: "Products" },
   ];
@@ -71,7 +81,7 @@ const MainLayout = () => {
         <Menu
           theme="dark"
           mode="inline"
-          className="absolute bottom-0 w-full"
+          className="absolute w-full"
           items={[
             {
               key: "logout",
