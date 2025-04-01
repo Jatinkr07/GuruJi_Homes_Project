@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import builderRoutes from "./routes/builderRoutes.js";
+import projectsRoutes from "./routes/projectsRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -38,6 +39,7 @@ app.use(
 
 app.use("/api/auth", authRoutes);
 app.use("/api", builderRoutes);
+app.use("/api/projects", projectsRoutes);
 
 const PORT = process.env.PORT || 6001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

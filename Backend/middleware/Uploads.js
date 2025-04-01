@@ -15,6 +15,7 @@ const uploadPaths = {
   builder: path.join(__dirname, "../uploads/builder"),
   type: path.join(__dirname, "../uploads/type"),
   status: path.join(__dirname, "../uploads/status"),
+  projects: path.join(__dirname, "../uploads/projects"),
 };
 
 Object.values(uploadPaths).forEach(createUploadDir);
@@ -26,7 +27,7 @@ const Uploads = (req, res, next) => {
 
   const bb = busboy({
     headers: req.headers,
-    limits: { fileSize: 5 * 1024 * 1024, files: 10 },
+    limits: { fileSize: 5 * 1024 * 1024, files: 50 }, // 5MB file size limit, 50 files max
   });
 
   req.body = {};
@@ -34,11 +35,24 @@ const Uploads = (req, res, next) => {
 
   bb.on("file", (fieldname, file, info) => {
     const { filename, mimeType } = info;
-    const entity = req.path.includes("builder")
-      ? "builder"
-      : req.path.includes("type")
-      ? "type"
-      : "status";
+
+    // Determine the entity based on the request path
+    let entity;
+    if (req.path.startsWith("/api/builders")) {
+      entity = "builder";
+    } else if (req.path.startsWith("/api/types")) {
+      entity = "type";
+    } else if (req.path.startsWith("/api/projects")) {
+      entity = "projects";
+    } else if (req.path.startsWith("/api/statuses")) {
+      entity = "status";
+    } else {
+      entity = "projects"; // Default to projects if no match (adjust as needed)
+    }
+
+    // Debugging: Log the path and entity to verify
+    console.log(`Request Path: ${req.path}, Entity: ${entity}`);
+
     const uniqueName = `${Date.now()}-${filename.replace(/\s+/g, "-")}`;
     const saveTo = path.join(uploadPaths[entity], uniqueName);
 
@@ -58,12 +72,21 @@ const Uploads = (req, res, next) => {
       if (!req.files[fieldname]) req.files[fieldname] = [];
       req.files[fieldname].push(fileData);
     });
-    file.on("error", () => fs.unlinkSync(saveTo));
+    file.on("error", () => {
+      console.error(`Error writing file ${saveTo}`);
+      fs.unlinkSync(saveTo);
+    });
   });
 
   bb.on("field", (name, value) => (req.body[name] = value));
-  bb.on("finish", next);
-  bb.on("error", next);
+  bb.on("finish", () => {
+    console.log("Busboy finished processing files");
+    next();
+  });
+  bb.on("error", (err) => {
+    console.error("Busboy error:", err);
+    next(err);
+  });
 
   req.pipe(bb);
 };

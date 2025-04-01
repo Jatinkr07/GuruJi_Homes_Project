@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { PlusOutlined } from "@ant-design/icons";
 import { Badge } from "antd";
+import { Link } from "react-router-dom";
 
 export default function ProjectCard({ project }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -14,18 +14,19 @@ export default function ProjectCard({ project }) {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative h-[300px] overflow-hidden">
-        <motion.div
-          animate={{ scale: isHovered ? 1.05 : 1 }}
-          transition={{ duration: 0.3 }}
-          className="w-full h-full"
-        >
-          <img
-            src={project.image || "/placeholder.svg"}
-            alt={project.name}
-            className="object-cover"
-          />
-        </motion.div>
-
+        <Link to="/explore/projects/:id">
+          <motion.div
+            animate={{ scale: isHovered ? 1.05 : 1 }}
+            transition={{ duration: 0.3 }}
+            className="w-full h-full"
+          >
+            <img
+              src={project.image || "/placeholder.svg"}
+              alt={project.name}
+              className="object-cover"
+            />
+          </motion.div>
+        </Link>
         <div className="absolute px-3 py-1 text-xs font-medium uppercase bg-white bottom-4 left-4">
           {project.feature}
         </div>
@@ -39,9 +40,9 @@ export default function ProjectCard({ project }) {
             </div>
             <h3 className="text-lg font-bold">{project.name}</h3>
           </div>
-          <div className="transition-colors bg-white border-2 border-gray-800 rounded-full cursor-pointer  hover:bg-gray-50">
+          {/* <div className="transition-colors bg-white border-2 border-gray-800 rounded-full cursor-pointer hover:bg-gray-50">
             <PlusOutlined className="m-1 " />
-          </div>
+          </div> */}
         </div>
 
         {project.isNewLaunch && (

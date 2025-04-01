@@ -126,3 +126,22 @@ export const deleteStatus = async (id) =>
   (await api.delete(`/api/statuses/${id}`)).data;
 
 // Status APIs Start----------------
+
+// Project APIs Start----------------
+export const fetchProjects = async () => (await api.get("/api/projects")).data;
+export const createProject = async (formData) =>
+  (
+    await api.post("/api/projects", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+  ).data;
+export const updateProject = async ({ id, formData }) =>
+  (
+    await api.put(`/api/projects/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+  ).data;
+export const deleteProject = async (id) =>
+  (await api.delete(`/api/projects/${id}`)).data;
+
+// Project APIs End----------------

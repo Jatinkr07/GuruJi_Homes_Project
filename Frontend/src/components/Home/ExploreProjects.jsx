@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Button } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
 import image1 from "/projects/P-1.jpg";
 import image2 from "/projects/P-2.jpg";
 import image3 from "/projects/P-3.jpg";
@@ -128,13 +126,13 @@ export default function ExploreProjects() {
                     whileHover={{ scale: 1.1 }}
                     className="top-4 left-4"
                   >
-                    <Button
+                    {/* <Button
                       type="default"
                       shape="circle"
                       icon={<PlusOutlined />}
                       className="flex items-center justify-center bg-white border-2 border-gray-800 shadow-md"
                       size="medium"
-                    />
+                    /> */}
                   </motion.div>
                 </div>
                 <h3 className="mb-3 text-lg font-bold text-black">

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
 
 const cards = [
   {
@@ -151,7 +150,7 @@ export default function Banner() {
         ))}
       </div>
 
-      <div className="flex justify-center mt-10">
+      {/* <div className="flex justify-center mt-10">
         <Link to="/projects">
           <motion.button
             className="px-6 py-3 font-medium text-white bg-black border-2 border-black hover:bg-white hover:text-black focus:outline-none focus:ring-2 focus:ring-black/50"
@@ -162,7 +161,7 @@ export default function Banner() {
             View More
           </motion.button>
         </Link>
-      </div>
+      </div> */}
     </div>
   );
 }
