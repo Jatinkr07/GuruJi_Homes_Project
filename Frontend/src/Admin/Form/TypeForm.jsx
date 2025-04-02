@@ -1,9 +1,9 @@
 /* eslint-disable react/prop-types */
-// components/Form/TypeForm.jsx
 import { Modal, Form, Input, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import { API_URL } from "../../services/api";
+import path from "path";
 
 const TypeForm = ({ visible, onCancel, initialValues, onFinish }) => {
   const [form] = Form.useForm();
@@ -16,7 +16,7 @@ const TypeForm = ({ visible, onCancel, initialValues, onFinish }) => {
         setFileList([
           {
             uid: "-1",
-            name: "image",
+            name: path.basename(initialValues.image),
             status: "done",
             url: `${API_URL}/${initialValues.image}`,
           },

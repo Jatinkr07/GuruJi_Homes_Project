@@ -5,6 +5,7 @@ import { SearchOutlined, DownOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProjects, API_URL } from "../../services/api.js";
 import ProjectCard from "./ProjectCard";
+import { CircleLoader } from "react-spinners";
 
 export default function ProjectPage() {
   const [searchValue, setSearchValue] = useState("");
@@ -126,7 +127,9 @@ export default function ProjectPage() {
       </motion.div>
 
       {isLoading ? (
-        <div className="text-center">Loading projects...</div>
+        <div className="flex items-center justify-center">
+          <CircleLoader />
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 mb-10 md:grid-cols-2 lg:grid-cols-3">
           {paginatedProjects.map((project, index) => (

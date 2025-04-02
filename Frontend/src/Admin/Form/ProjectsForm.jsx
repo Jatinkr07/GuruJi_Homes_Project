@@ -24,6 +24,7 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
   const [form] = Form.useForm();
   const [imageList, setImageList] = useState([]);
   const [floorPlanList, setFloorPlanList] = useState([]);
+  const [floorPlanText, setFloorPlanText] = useState([]);
   const [sitePlanList, setSitePlanList] = useState([]);
   const [brochureList, setBrochureList] = useState([]);
   const [bannerImageList, setBannerImageList] = useState([]);
@@ -70,9 +71,11 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
           uid: `fp-${i}`,
           name: `floorPlan-${i}`,
           status: "done",
-          url: `${API_URL}/${fp}`,
+          url: `${API_URL}/${fp.image}`,
+          text: fp.text,
         })) || []
       );
+      setFloorPlanText(initialValues.floorPlan?.map((fp) => fp.text) || []);
       setSitePlanList(
         initialValues.sitePlan?.map((sp, i) => ({
           uid: `sp-${i}`,
@@ -109,6 +112,7 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
       form.resetFields();
       setImageList([]);
       setFloorPlanList([]);
+      setFloorPlanText([]);
       setSitePlanList([]);
       setBrochureList([]);
       setBannerImageList([]);
@@ -125,8 +129,18 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
         newFileList.map((file) => ({
           ...file,
           originFileObj: file.originFileObj || file,
+          text: file.text || "",
         }))
       );
+
+  const handleFloorPlanTextChange = (index, value) => {
+    const newFloorPlanText = [...floorPlanText];
+    newFloorPlanText[index] = value;
+    setFloorPlanText(newFloorPlanText);
+    setFloorPlanList((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, text: value } : item))
+    );
+  };
 
   const addHighlight = () => {
     if (highlightInput.trim()) {
@@ -135,9 +149,8 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
     }
   };
 
-  const removeHighlight = (index) => {
+  const removeHighlight = (index) =>
     setHighlights(highlights.filter((_, i) => i !== index));
-  };
 
   const handleFinish = (values) => {
     const formData = new FormData();
@@ -150,6 +163,7 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
     formData.append("description", values.description);
     formData.append("amenities", JSON.stringify(selectedAmenities));
     formData.append("highlight", JSON.stringify(highlights));
+    formData.append("floorPlanText", JSON.stringify(floorPlanText)); // Send captions
 
     imageList.forEach(
       (file) =>
@@ -241,7 +255,7 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
           label="Price"
           rules={[{ required: true, message: "Please enter a price" }]}
         >
-          <Input type="number" prefix="₹" />
+          <Input type="number" prefix="$" />
         </Form.Item>
         <Form.Item
           name="description"
@@ -273,7 +287,7 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
               value={highlightInput}
               onChange={(e) => setHighlightInput(e.target.value)}
               placeholder="Enter a highlight"
-              onPressEnter={addHighlight} // Add on Enter key
+              onPressEnter={addHighlight}
             />
             <Button
               type="primary"
@@ -320,7 +334,7 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
             fileList={bannerImageList}
             onChange={handleFileChange(setBannerImageList)}
             beforeUpload={() => false}
-            maxCount={1} // Single banner image
+            maxCount={1}
           >
             <div>
               <UploadOutlined />
@@ -361,6 +375,31 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
               <div>Upload</div>
             </div>
           </Upload>
+          {floorPlanList.length > 0 && (
+            <List
+              size="small"
+              dataSource={floorPlanList}
+              renderItem={(item, index) => (
+                <List.Item>
+                  <Space direction="vertical" style={{ width: "100%" }}>
+                    <img
+                      src={item.url || URL.createObjectURL(item.originFileObj)}
+                      alt="Floor Plan"
+                      style={{ width: 50, height: 50 }}
+                    />
+                    <Input
+                      value={item.text || floorPlanText[index] || ""}
+                      onChange={(e) =>
+                        handleFloorPlanTextChange(index, e.target.value)
+                      }
+                      placeholder={`Caption for Floor Plan ${index + 1}`}
+                    />
+                  </Space>
+                </List.Item>
+              )}
+              style={{ marginTop: 16 }}
+            />
+          )}
         </Form.Item>
         <Form.Item name="sitePlan" label="Site Plans">
           <Upload

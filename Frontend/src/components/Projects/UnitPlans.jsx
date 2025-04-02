@@ -5,12 +5,21 @@ export default function UnitPlans({ project }) {
   const floorPlans =
     project.floorPlan?.length > 0
       ? project.floorPlan.map((fp, index) => ({
-          src: `${API_URL}/${fp}`,
+          src: `${API_URL}/${fp.image}`,
           alt: `Floor Plan ${index + 1}`,
+          text: fp.text,
         }))
       : [
-          { src: "/U-1.jpeg", alt: "Default Floor Plan 1" },
-          { src: "/U-2.jpeg", alt: "Default Floor Plan 2" },
+          {
+            src: "/U-1.jpeg",
+            alt: "Default Floor Plan 1",
+            text: "Default 2 BHK",
+          },
+          {
+            src: "/U-2.jpeg",
+            alt: "Default Floor Plan 2",
+            text: "Default 4 BHK",
+          },
         ];
 
   return (
@@ -27,16 +36,17 @@ export default function UnitPlans({ project }) {
         {floorPlans.map((plan, index) => (
           <div
             key={index}
-            className="relative overflow-hidden rounded-lg shadow-lg"
+            className="relative overflow-hidden rounded-lg shadow-lg group"
           >
-            <div className="transition-transform duration-300 hover:scale-105">
-              <img
-                src={plan.src}
-                alt={plan.alt}
-                width={800}
-                height={600}
-                className="w-full h-auto"
-              />
+            <img
+              src={plan.src}
+              alt={plan.alt}
+              width={800}
+              height={600}
+              className="w-full h-auto transition-transform duration-300 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 flex items-center justify-center text-lg font-semibold text-white transition-opacity duration-300 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100">
+              {plan.text}
             </div>
           </div>
         ))}

@@ -1,9 +1,9 @@
 /* eslint-disable react/prop-types */
-
 import { Modal, Form, Input, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import { API_URL } from "../../services/api";
+import path from "path";
 
 const BuilderForm = ({ visible, onCancel, initialValues, onFinish }) => {
   const [form] = Form.useForm();
@@ -16,7 +16,7 @@ const BuilderForm = ({ visible, onCancel, initialValues, onFinish }) => {
         setFileList([
           {
             uid: "-1",
-            name: "image",
+            name: path.basename(initialValues.image),
             status: "done",
             url: `${API_URL}/${initialValues.image}`,
           },
@@ -45,6 +45,7 @@ const BuilderForm = ({ visible, onCancel, initialValues, onFinish }) => {
     if (initialValues?._id) {
       formData.append("id", initialValues._id);
     }
+    console.log("FormData being sent:", Array.from(formData.entries()));
     onFinish(formData);
   };
 

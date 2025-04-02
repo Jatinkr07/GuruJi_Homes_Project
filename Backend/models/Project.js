@@ -18,7 +18,12 @@ const ProjectSchema = new mongoose.Schema({
   description: { type: String, required: true },
   amenities: [{ type: String }],
   images: [{ type: String }],
-  floorPlan: [{ type: String }],
+  floorPlan: [
+    {
+      image: { type: String, required: true },
+      text: { type: String, required: true },
+    },
+  ],
   sitePlan: [{ type: String }],
   highlight: [{ type: String }],
   bannerImage: { type: String },

@@ -19,8 +19,11 @@ export const createProject = async (req, res) => {
       description,
       amenities,
       highlight,
+      floorPlanText,
     } = req.body;
     const files = req.files || {};
+
+    const floorPlanCaptions = floorPlanText ? JSON.parse(floorPlanText) : [];
 
     const projectData = {
       title,
@@ -38,9 +41,10 @@ export const createProject = async (req, res) => {
           )
         : [],
       floorPlan: files.floorPlan
-        ? files.floorPlan.map(
-            (file) => `uploads/projects/${path.basename(file.path)}`
-          )
+        ? files.floorPlan.map((file, index) => ({
+            image: `uploads/projects/${path.basename(file.path)}`,
+            text: floorPlanCaptions[index] || `Floor Plan ${index + 1}`,
+          }))
         : [],
       sitePlan: files.sitePlan
         ? files.sitePlan.map(
@@ -79,6 +83,7 @@ export const updateProject = async (req, res) => {
       description,
       amenities,
       highlight,
+      floorPlanText,
     } = req.body;
     const files = req.files || {};
 
@@ -110,15 +115,16 @@ export const updateProject = async (req, res) => {
     }
 
     if (files.floorPlan) {
-      project.floorPlan.forEach((img) =>
+      project.floorPlan.forEach((fp) =>
         fs.unlink(
-          path.join(__dirname, "../", img),
+          path.join(__dirname, "../", fp.image),
           (err) => err && console.error(err)
         )
       );
-      updatedData.floorPlan = files.floorPlan.map(
-        (file) => `uploads/projects/${path.basename(file.path)}`
-      );
+      updatedData.floorPlan = files.floorPlan.map((file, index) => ({
+        image: `uploads/projects/${path.basename(file.path)}`,
+        text: floorPlanCaptions[index] || `Floor Plan ${index + 1}`,
+      }));
     } else {
       updatedData.floorPlan = project.floorPlan;
     }

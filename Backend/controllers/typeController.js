@@ -1,5 +1,7 @@
+// controllers/typeController.js
 import Type from "../models/Type.js";
 import fs from "fs";
+import { promises as fsPromises } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -12,8 +14,8 @@ export const createType = async (req, res) => {
     const files = req.files || {};
     const typeData = { name };
 
-    if (files.image) {
-      typeData.image = `uploads/type/${path.basename(files.image[0].path)}`;
+    if (files.image && files.image[0]) {
+      typeData.image = files.image[0].path; // Use relative path from Uploads
     }
 
     const type = new Type(typeData);
@@ -42,13 +44,14 @@ export const updateType = async (req, res) => {
     const files = req.files || {};
     const updatedData = { name: name || type.name };
 
-    if (files.image) {
+    if (files.image && files.image[0]) {
       if (type.image) {
-        fs.unlink(path.join(__dirname, "../", type.image), (err) => {
-          if (err) console.error("Error deleting old image:", err);
-        });
+        const oldImagePath = path.join(__dirname, "../", type.image);
+        if (fs.existsSync(oldImagePath)) {
+          await fsPromises.unlink(oldImagePath);
+        }
       }
-      updatedData.image = `uploads/type/${path.basename(files.image[0].path)}`;
+      updatedData.image = files.image[0].path; // Use relative path
     }
 
     const updatedType = await Type.findByIdAndUpdate(
@@ -68,9 +71,10 @@ export const deleteType = async (req, res) => {
     if (!type) return res.status(404).json({ message: "Type not found" });
 
     if (type.image) {
-      fs.unlink(path.join(__dirname, "../", type.image), (err) => {
-        if (err) console.error("Error deleting image:", err);
-      });
+      const imagePath = path.join(__dirname, "../", type.image);
+      if (fs.existsSync(imagePath)) {
+        await fsPromises.unlink(imagePath);
+      }
     }
 
     await Type.findByIdAndDelete(req.params.id);

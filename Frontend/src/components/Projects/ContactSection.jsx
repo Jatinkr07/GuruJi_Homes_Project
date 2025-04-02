@@ -154,9 +154,9 @@ export default function ContactSection({ project }) {
           transition={{ duration: 0.5 }}
         >
           <img
-            src="/A-5.jpeg"
+            src="/projects/P-5.jpg"
             alt="Dream Home"
-            className="rounded-b-lg md:rounded-r-lg md:rounded-bl-none"
+            className="rounded-b-lg md:rounded-r-lg md:rounded-bl-none lg:h-[540px]"
           />
         </motion.div>
       </div>

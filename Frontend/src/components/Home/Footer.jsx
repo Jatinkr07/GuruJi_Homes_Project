@@ -75,7 +75,7 @@ const Footer = () => {
       <div className="border-t border-gray-200">
         <div className="container flex flex-col items-center justify-end py-4 mx-auto px-28 sm:flex-row">
           <p className="text-sm">
-            &copy; {new Date().getFullYear()} Your Company Name. All rights
+            Copyright &copy; {new Date().getFullYear()} GuruJi Homes. All rights
             reserved.
           </p>
           {/* <div className="flex mt-2 space-x-4 sm:mt-0">
