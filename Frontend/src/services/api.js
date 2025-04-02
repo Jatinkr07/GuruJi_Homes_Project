@@ -129,6 +129,10 @@ export const deleteStatus = async (id) =>
 
 // Project APIs Start----------------
 export const fetchProjects = async () => (await api.get("/api/projects")).data;
+export const fetchProjectById = async (id) => {
+  const response = await fetch(`${API_URL}/api/projects/${id}`);
+  return response.json();
+};
 export const createProject = async (formData) =>
   (
     await api.post("/api/projects", formData, {

@@ -1,20 +1,11 @@
-"use client";
-
+/* eslint-disable react/prop-types */
 import { motion } from "framer-motion";
 import { CheckCircle } from "lucide-react";
+import { API_URL } from "../../services/api";
 
-const highlights = [
-  "Spacious 4 BHK & 2 BHK Apartments – Designed for comfort and style.",
-  "RERA-Approved 4 BHK Apartments – First time in Affordable Group Housing!",
-  "Sale of Apartment on Carpet Area Basis",
-  "Rates Rs 5000 Per Sqft. on carpet Area",
-  "2BHK @ 31.20 Lacs, 4 BHK @ 49.60 Lacs inclusive of EDC and IDC (GST, possession charges Extra)",
-  "Allotment by draw",
-  "Wide Balconies – For breathtaking views and ample space.",
-  "Last Opportunity – Secure an affordable flat in the prime sectors 72 to 89!",
-];
+export default function HighlighterBanner({ project }) {
+  const highlights = project.highlight || ["No highlights available."];
 
-const HighlighterBanner = () => {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -25,11 +16,12 @@ const HighlighterBanner = () => {
       <div
         className="absolute inset-0 bg-center bg-cover"
         style={{
-          backgroundImage: "url('/Banner.jpg')",
+          backgroundImage: project.bannerImage
+            ? `url('${API_URL}/${project.bannerImage}')`
+            : "url('/Banner.jpg')",
         }}
       />
       <div className="absolute inset-0 bg-black opacity-60" />
-
       <div className="relative z-10">
         <motion.h2
           initial={{ y: -20, opacity: 0 }}
@@ -67,6 +59,4 @@ const HighlighterBanner = () => {
       </div>
     </motion.div>
   );
-};
-
-export default HighlighterBanner;
+}

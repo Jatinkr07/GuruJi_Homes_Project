@@ -2,7 +2,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Input, Select, Pagination, Button } from "antd";
 import { SearchOutlined, DownOutlined } from "@ant-design/icons";
-import { projects } from "./Data";
+import { useQuery } from "@tanstack/react-query";
+import { fetchProjects, API_URL } from "../../services/api.js";
 import ProjectCard from "./ProjectCard";
 
 export default function ProjectPage() {
@@ -13,7 +14,26 @@ export default function ProjectPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 9;
 
-  const filteredProjects = projects.filter((project) => {
+  const { data: projects, isLoading } = useQuery({
+    queryKey: ["projects"],
+    queryFn: fetchProjects,
+  });
+
+  const projectData =
+    projects?.map((project) => ({
+      id: project._id,
+      image: project.bannerImage
+        ? `${API_URL}/${project.bannerImage}`
+        : "/placeholder.svg",
+      name: project.title,
+      price: project.price,
+      location: project.location,
+      type: project.type?.name || "Unknown",
+      status: project.status?.text || "Unknown",
+      isNewLaunch: project.status?.text === "available",
+    })) || [];
+
+  const filteredProjects = projectData.filter((project) => {
     const matchesSearch = project.name
       .toLowerCase()
       .includes(searchValue.toLowerCase());
@@ -49,7 +69,7 @@ export default function ProjectPage() {
         />
       </div>
 
-      <div className="p-4 mb-6 bg-white lg:ml-[1000px] ">
+      <div className="p-4 mb-6 bg-white lg:ml-[1000px]">
         <div className="grid items-center grid-cols-3 gap-4 md:grid-cols-3">
           <Select
             placeholder="Property Type"
@@ -58,11 +78,14 @@ export default function ProjectPage() {
             suffixIcon={<DownOutlined />}
             className="w-full"
             size="large"
-            options={[
-              { value: "residential", label: "Residential" },
-              { value: "commercial", label: "Commercial" },
-            ]}
+            options={Array.from(new Set(projectData.map((p) => p.type))).map(
+              (type) => ({
+                value: type,
+                label: type,
+              })
+            )}
             allowClear
+            loading={isLoading}
           />
           <Select
             placeholder="Status"
@@ -71,11 +94,14 @@ export default function ProjectPage() {
             suffixIcon={<DownOutlined />}
             className="w-full"
             size="large"
-            options={[
-              { value: "under-construction", label: "Under Construction" },
-              { value: "ready-to-move", label: "Ready to Move" },
-            ]}
+            options={Array.from(new Set(projectData.map((p) => p.status))).map(
+              (status) => ({
+                value: status,
+                label: status,
+              })
+            )}
             allowClear
+            loading={isLoading}
           />
           <Button
             type="primary"
@@ -99,21 +125,23 @@ export default function ProjectPage() {
         </h2>
       </motion.div>
 
-      {/* Projects Grid */}
-      <div className="grid grid-cols-1 gap-6 mb-10 md:grid-cols-2 lg:grid-cols-3">
-        {paginatedProjects.map((project, index) => (
-          <motion.div
-            key={project.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-          >
-            <ProjectCard project={project} />
-          </motion.div>
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="text-center">Loading projects...</div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 mb-10 md:grid-cols-2 lg:grid-cols-3">
+          {paginatedProjects.map((project, index) => (
+            <motion.div
+              key={project.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <ProjectCard project={project} />
+            </motion.div>
+          ))}
+        </div>
+      )}
 
-      {/* Pagination */}
       {filteredProjects.length > pageSize && (
         <div className="flex justify-center mt-10">
           <Pagination

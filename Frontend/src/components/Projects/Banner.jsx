@@ -1,16 +1,19 @@
+/* eslint-disable react/prop-types */
 import { motion } from "framer-motion";
+import { API_URL } from "../../services/api";
 
-export default function Banner() {
+export default function Banner({ project }) {
   return (
-    <section className="relative w-full h-[45vh] lg:h-[600px] ">
-      {/* Background Image */}
+    <section className="relative w-full h-[45vh] lg:h-[600px]">
       <img
-        src="/G-01.jpg"
-        alt="Prima adore luxury apartments night view"
+        src={
+          project.bannerImage
+            ? `${API_URL}/${project.bannerImage}`
+            : "/G-01.jpg"
+        }
+        alt={`${project.title} banner`}
         className="absolute inset-0 object-cover w-full h-full"
       />
-      {/* <div className="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-sm"></div> */}
-
       <div className="container relative flex items-end h-full px-4 pb-12 mx-auto">
         <motion.div
           initial={{ opacity: 0, x: -50 }}
@@ -19,33 +22,17 @@ export default function Banner() {
           className="max-w-md p-3 lg:p-6 rounded-xl bg-gray-900/50 backdrop-blur-sm"
         >
           <div className="flex items-center mb-4">
-            <div className="w-8 h-8">
-              {/* <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                className="w-full h-full text-amber-400"
-              >
-                <path
-                  d="M12 2L15 8L21 9L16.5 14L18 20L12 17L6 20L7.5 14L3 9L9 8L12 2Z"
-                  fill="currentColor"
-                />
-              </svg> */}
-            </div>
-            <h1 className="text-xl font-[500] text-white md:text-2xl lg:-ml-8 ">
-              adore PRIMA
-              {/* <span className="block mt-1 text-2xl font-light md:text-3xl">
-                adore
-              </span> */}
+            <h1 className="text-xl font-[500] text-white md:text-2xl">
+              {project.title}
             </h1>
           </div>
-
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
             className="text-lg text-white/90 md:text-xl"
           >
-            <p>Sector 72-73, Faridabad</p>
+            <p>{project.location}</p>
             <p className="mt-4 text-sm md:text-base text-white/70">
               Luxury Apartments with Modern Living
             </p>

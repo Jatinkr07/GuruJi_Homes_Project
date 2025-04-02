@@ -14,24 +14,24 @@ export default function ProjectCard({ project }) {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative h-[300px] overflow-hidden">
-        <Link to="/explore/projects/:id">
+        <Link to={`/projects/${project.id}`}>
           <motion.div
             animate={{ scale: isHovered ? 1.05 : 1 }}
             transition={{ duration: 0.3 }}
             className="w-full h-full"
           >
             <img
-              src={project.image || "/placeholder.svg"}
+              src={project.image}
               alt={project.name}
               className="object-cover"
+              onError={(e) => (e.target.src = "/placeholder.svg")}
             />
           </motion.div>
         </Link>
         <div className="absolute px-3 py-1 text-xs font-medium uppercase bg-white bottom-4 left-4">
-          {project.feature}
+          {project.status}
         </div>
       </div>
-
       <div className="flex flex-col flex-1 p-4">
         <div className="flex items-start justify-between mb-2">
           <div>
@@ -40,11 +40,7 @@ export default function ProjectCard({ project }) {
             </div>
             <h3 className="text-lg font-bold">{project.name}</h3>
           </div>
-          {/* <div className="transition-colors bg-white border-2 border-gray-800 rounded-full cursor-pointer hover:bg-gray-50">
-            <PlusOutlined className="m-1 " />
-          </div> */}
         </div>
-
         {project.isNewLaunch && (
           <div className="mb-4">
             <Badge
@@ -59,7 +55,6 @@ export default function ProjectCard({ project }) {
             />
           </div>
         )}
-
         <div className="pt-4 mt-auto border-t border-gray-200">
           <div className="flex justify-between mb-2 text-sm">
             <div>
@@ -67,12 +62,7 @@ export default function ProjectCard({ project }) {
                 INR {project.price} Cr. onwards
               </span>
             </div>
-            <div>
-              <span className="text-gray-600">Possession Date</span>{" "}
-              <span className="font-medium">{project.possessionDate}</span>
-            </div>
           </div>
-          <div className="text-sm font-medium">{project.configuration}</div>
         </div>
       </div>
     </div>

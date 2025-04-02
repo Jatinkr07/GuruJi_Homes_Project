@@ -1,7 +1,12 @@
+/* eslint-disable react/jsx-key */
 /* eslint-disable react/prop-types */
-
-import { Modal, Form, Input, Upload, Select } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+// src/Admin/Form/ProjectsForm.jsx
+import { Modal, Form, Input, Upload, Select, Button, List, Space } from "antd";
+import {
+  UploadOutlined,
+  PlusOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import {
   API_URL,
@@ -11,6 +16,7 @@ import {
 } from "../../services/api";
 import { useQuery } from "@tanstack/react-query";
 import { amenitiesList } from "../../Pages/Projects/Amenities/Card";
+
 const { TextArea } = Input;
 const { Option } = Select;
 
@@ -20,25 +26,37 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
   const [floorPlanList, setFloorPlanList] = useState([]);
   const [sitePlanList, setSitePlanList] = useState([]);
   const [brochureList, setBrochureList] = useState([]);
+  const [bannerImageList, setBannerImageList] = useState([]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
+  const [highlightInput, setHighlightInput] = useState("");
+  const [highlights, setHighlights] = useState([]);
 
-  const { data: builders } = useQuery({
+  const { data: builders, isLoading: buildersLoading } = useQuery({
     queryKey: ["builders"],
     queryFn: fetchBuilders,
   });
-  const { data: types } = useQuery({
+  const { data: types, isLoading: typesLoading } = useQuery({
     queryKey: ["types"],
     queryFn: fetchTypes,
   });
-  const { data: statuses } = useQuery({
+  const { data: statuses, isLoading: statusesLoading } = useQuery({
     queryKey: ["statuses"],
     queryFn: fetchStatuses,
   });
 
   useEffect(() => {
     if (initialValues) {
-      form.setFieldsValue(initialValues);
+      form.setFieldsValue({
+        title: initialValues.title,
+        builder: initialValues.builder?._id || initialValues.builder,
+        type: initialValues.type?._id || initialValues.type,
+        status: initialValues.status?._id || initialValues.status,
+        location: initialValues.location,
+        price: initialValues.price,
+        description: initialValues.description,
+      });
       setSelectedAmenities(initialValues.amenities || []);
+      setHighlights(initialValues.highlight || []);
       setImageList(
         initialValues.images?.map((img, i) => ({
           uid: `img-${i}`,
@@ -75,13 +93,28 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
             ]
           : []
       );
+      setBannerImageList(
+        initialValues.bannerImage
+          ? [
+              {
+                uid: "banner",
+                name: "banner",
+                status: "done",
+                url: `${API_URL}/${initialValues.bannerImage}`,
+              },
+            ]
+          : []
+      );
     } else {
       form.resetFields();
       setImageList([]);
       setFloorPlanList([]);
       setSitePlanList([]);
       setBrochureList([]);
+      setBannerImageList([]);
       setSelectedAmenities([]);
+      setHighlights([]);
+      setHighlightInput("");
     }
   }, [initialValues, form]);
 
@@ -95,6 +128,17 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
         }))
       );
 
+  const addHighlight = () => {
+    if (highlightInput.trim()) {
+      setHighlights([...highlights, highlightInput.trim()]);
+      setHighlightInput("");
+    }
+  };
+
+  const removeHighlight = (index) => {
+    setHighlights(highlights.filter((_, i) => i !== index));
+  };
+
   const handleFinish = (values) => {
     const formData = new FormData();
     formData.append("title", values.title);
@@ -104,7 +148,8 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
     formData.append("location", values.location);
     formData.append("price", values.price);
     formData.append("description", values.description);
-    formData.append("amenities", JSON.stringify(selectedAmenities)); // Send only names
+    formData.append("amenities", JSON.stringify(selectedAmenities));
+    formData.append("highlight", JSON.stringify(highlights));
 
     imageList.forEach(
       (file) =>
@@ -120,6 +165,10 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
     );
     if (brochureList[0]?.originFileObj)
       formData.append("brochure", brochureList[0].originFileObj);
+    if (bannerImageList[0]?.originFileObj)
+      formData.append("bannerImage", bannerImageList[0].originFileObj);
+
+    if (initialValues?._id) formData.append("id", initialValues._id);
 
     onFinish(formData);
   };
@@ -131,13 +180,22 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
       onOk={() => form.submit()}
       onCancel={onCancel}
       width={800}
+      confirmLoading={buildersLoading || typesLoading || statusesLoading}
     >
       <Form form={form} layout="vertical" onFinish={handleFinish}>
-        <Form.Item name="title" label="Title" rules={[{ required: true }]}>
+        <Form.Item
+          name="title"
+          label="Title"
+          rules={[{ required: true, message: "Please enter a title" }]}
+        >
           <Input />
         </Form.Item>
-        <Form.Item name="builder" label="Builder" rules={[{ required: true }]}>
-          <Select>
+        <Form.Item
+          name="builder"
+          label="Builder"
+          rules={[{ required: true, message: "Please select a builder" }]}
+        >
+          <Select placeholder="Select a builder" loading={buildersLoading}>
             {builders?.map((b) => (
               <Option key={b._id} value={b._id}>
                 {b.name}
@@ -145,8 +203,12 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
             ))}
           </Select>
         </Form.Item>
-        <Form.Item name="type" label="Type" rules={[{ required: true }]}>
-          <Select>
+        <Form.Item
+          name="type"
+          label="Type"
+          rules={[{ required: true, message: "Please select a type" }]}
+        >
+          <Select placeholder="Select a type" loading={typesLoading}>
             {types?.map((t) => (
               <Option key={t._id} value={t._id}>
                 {t.name}
@@ -154,8 +216,12 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
             ))}
           </Select>
         </Form.Item>
-        <Form.Item name="status" label="Status" rules={[{ required: true }]}>
-          <Select>
+        <Form.Item
+          name="status"
+          label="Status"
+          rules={[{ required: true, message: "Please select a status" }]}
+        >
+          <Select placeholder="Select a status" loading={statusesLoading}>
             {statuses?.map((s) => (
               <Option key={s._id} value={s._id}>
                 {s.text}
@@ -166,17 +232,21 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
         <Form.Item
           name="location"
           label="Location"
-          rules={[{ required: true }]}
+          rules={[{ required: true, message: "Please enter a location" }]}
         >
           <Input />
         </Form.Item>
-        <Form.Item name="price" label="Price" rules={[{ required: true }]}>
-          <Input type="number" prefix="$" />
+        <Form.Item
+          name="price"
+          label="Price"
+          rules={[{ required: true, message: "Please enter a price" }]}
+        >
+          <Input type="number" prefix="₹" />
         </Form.Item>
         <Form.Item
           name="description"
           label="Description"
-          rules={[{ required: true }]}
+          rules={[{ required: true, message: "Please enter a description" }]}
         >
           <TextArea rows={4} />
         </Form.Item>
@@ -196,6 +266,67 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
               </Option>
             ))}
           </Select>
+        </Form.Item>
+        <Form.Item label="Highlights">
+          <Space style={{ width: "100%" }}>
+            <Input
+              value={highlightInput}
+              onChange={(e) => setHighlightInput(e.target.value)}
+              placeholder="Enter a highlight"
+              onPressEnter={addHighlight} // Add on Enter key
+            />
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={addHighlight}
+            >
+              Add
+            </Button>
+          </Space>
+          {highlights.length > 0 && (
+            <List
+              size="small"
+              dataSource={highlights}
+              renderItem={(item, index) => (
+                <List.Item
+                  actions={[
+                    <Button
+                      type="text"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => removeHighlight(index)}
+                    />,
+                  ]}
+                >
+                  {item}
+                </List.Item>
+              )}
+              style={{ marginTop: 16 }}
+            />
+          )}
+        </Form.Item>
+        <Form.Item
+          name="bannerImage"
+          label="Banner Image"
+          rules={[
+            {
+              required: !initialValues,
+              message: "Please upload a banner image",
+            },
+          ]}
+        >
+          <Upload
+            listType="picture-card"
+            fileList={bannerImageList}
+            onChange={handleFileChange(setBannerImageList)}
+            beforeUpload={() => false}
+            maxCount={1} // Single banner image
+          >
+            <div>
+              <UploadOutlined />
+              <div>Upload</div>
+            </div>
+          </Upload>
         </Form.Item>
         <Form.Item
           name="images"

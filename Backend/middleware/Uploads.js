@@ -1,4 +1,3 @@
-// middleware/uploads.js
 import busboy from "busboy";
 import path from "path";
 import fs from "fs";
@@ -27,7 +26,7 @@ const Uploads = (req, res, next) => {
 
   const bb = busboy({
     headers: req.headers,
-    limits: { fileSize: 5 * 1024 * 1024, files: 50 }, // 5MB file size limit, 50 files max
+    limits: { fileSize: 5 * 1024 * 1024, files: 50 },
   });
 
   req.body = {};
@@ -36,7 +35,6 @@ const Uploads = (req, res, next) => {
   bb.on("file", (fieldname, file, info) => {
     const { filename, mimeType } = info;
 
-    // Determine the entity based on the request path
     let entity;
     if (req.path.startsWith("/api/builders")) {
       entity = "builder";
@@ -47,11 +45,8 @@ const Uploads = (req, res, next) => {
     } else if (req.path.startsWith("/api/statuses")) {
       entity = "status";
     } else {
-      entity = "projects"; // Default to projects if no match (adjust as needed)
+      entity = "projects";
     }
-
-    // Debugging: Log the path and entity to verify
-    console.log(`Request Path: ${req.path}, Entity: ${entity}`);
 
     const uniqueName = `${Date.now()}-${filename.replace(/\s+/g, "-")}`;
     const saveTo = path.join(uploadPaths[entity], uniqueName);
@@ -73,18 +68,15 @@ const Uploads = (req, res, next) => {
       req.files[fieldname].push(fileData);
     });
     file.on("error", () => {
-      console.error(`Error writing file ${saveTo}`);
       fs.unlinkSync(saveTo);
     });
   });
 
   bb.on("field", (name, value) => (req.body[name] = value));
   bb.on("finish", () => {
-    console.log("Busboy finished processing files");
     next();
   });
   bb.on("error", (err) => {
-    console.error("Busboy error:", err);
     next(err);
   });
 

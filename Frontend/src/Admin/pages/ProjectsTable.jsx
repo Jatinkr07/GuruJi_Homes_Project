@@ -14,9 +14,10 @@ import {
   updateProject,
   deleteProject,
   fetchStatuses,
+  API_URL, // Add this import for image URL
 } from "../../services/api";
 import ProjectsForm from "../Form/ProjectsForm";
-import AmenitiesCards from "../../Pages/Projects/Amenities/Card";
+// import AmenitiesCards from "../../Pages/Projects/Amenities/Card";
 
 const ProjectsTable = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -75,9 +76,14 @@ const ProjectsTable = () => {
 
   const columns = [
     {
+      title: "S.No", // Serial Number column
+      width: "5%",
+      render: (_, __, index) => index + 1, // Display row number starting from 1
+    },
+    {
       title: "Title",
       dataIndex: "title",
-      width: "20%",
+      width: "15%", // Adjusted width to fit new columns
       sorter: (a, b) => a.title.localeCompare(b.title),
       render: (text) => (
         <Tooltip title="Click to view details">
@@ -85,20 +91,20 @@ const ProjectsTable = () => {
         </Tooltip>
       ),
     },
-    { title: "Builder", dataIndex: ["builder", "name"], width: "15%" },
-    { title: "Type", dataIndex: ["type", "name"], width: "15%" },
-    { title: "Location", dataIndex: "location", width: "15%" },
+    { title: "Builder", dataIndex: ["builder", "name"], width: "10%" },
+    { title: "Type", dataIndex: ["type", "name"], width: "10%" },
+    { title: "Location", dataIndex: "location", width: "10%" },
     {
       title: "Price",
       dataIndex: "price",
-      width: "15%",
+      width: "10%",
       sorter: (a, b) => a.price - b.price,
-      render: (price) => `$${price.toLocaleString()}`,
+      render: (price) => `₹${price.toLocaleString()}`,
     },
     {
       title: "Status",
       dataIndex: ["status", "text"],
-      width: "15%",
+      width: "10%",
       render: (text) => {
         const colors = {
           available: "success",
@@ -114,15 +120,31 @@ const ProjectsTable = () => {
         [],
       onFilter: (value, record) => record.status._id === value,
     },
+    // {
+    //   title: "Amenities",
+    //   dataIndex: "amenities",
+    //   width: "20%",
+    //   render: (amenities) => <AmenitiesCards amenities={amenities} />,
+    // },
     {
-      title: "Amenities",
-      dataIndex: "amenities",
-      width: "20%",
-      render: (amenities) => <AmenitiesCards amenities={amenities} />, // Display as cards
+      title: "Banner Image", // New column for banner image preview
+      dataIndex: "bannerImage",
+      width: "10%",
+      render: (bannerImage) =>
+        bannerImage ? (
+          <img
+            src={`${API_URL}/${bannerImage}`}
+            alt="Banner"
+            style={{ width: 50, height: 50, objectFit: "cover" }}
+          />
+        ) : (
+          "N/A"
+        ),
     },
     {
       title: "Action",
       key: "action",
+      width: "15%", // Adjusted width
       render: (_, record) => (
         <Space size="middle">
           <Button
@@ -189,7 +211,7 @@ const ProjectsTable = () => {
           showTotal: (total) => `Total ${total} items`,
         }}
         loading={projectsLoading || statusesLoading}
-        scroll={{ x: 1300 }}
+        scroll={{ x: 1400 }} // Increased scroll width to accommodate new columns
         size="middle"
         bordered
         rowKey="_id"

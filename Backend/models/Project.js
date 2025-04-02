@@ -20,6 +20,8 @@ const ProjectSchema = new mongoose.Schema({
   images: [{ type: String }],
   floorPlan: [{ type: String }],
   sitePlan: [{ type: String }],
+  highlight: [{ type: String }],
+  bannerImage: { type: String },
   brochure: { type: String },
   createdAt: { type: Date, default: Date.now },
 });

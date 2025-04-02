@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+//Controller for Create Project
 export const createProject = async (req, res) => {
   try {
     const {
@@ -17,6 +18,7 @@ export const createProject = async (req, res) => {
       price,
       description,
       amenities,
+      highlight,
     } = req.body;
     const files = req.files || {};
 
@@ -29,6 +31,7 @@ export const createProject = async (req, res) => {
       price: Number(price),
       description,
       amenities: JSON.parse(amenities),
+      highlight: highlight ? JSON.parse(highlight) : [],
       images: files.images
         ? files.images.map(
             (file) => `uploads/projects/${path.basename(file.path)}`
@@ -47,6 +50,9 @@ export const createProject = async (req, res) => {
       brochure: files.brochure
         ? `uploads/projects/${path.basename(files.brochure[0].path)}`
         : undefined,
+      bannerImage: files.bannerImage
+        ? `uploads/projects/${path.basename(files.bannerImage[0].path)}`
+        : undefined,
     };
 
     const project = new Project(projectData);
@@ -57,19 +63,7 @@ export const createProject = async (req, res) => {
   }
 };
 
-export const getProjects = async (req, res) => {
-  try {
-    const projects = await Project.find()
-      .populate("builder", "name")
-      .populate("type", "name")
-      .populate("status", "text")
-      .sort({ createdAt: -1 });
-    res.json(projects);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
+//Controller for Update or change existing Project
 export const updateProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
@@ -84,6 +78,7 @@ export const updateProject = async (req, res) => {
       price,
       description,
       amenities,
+      highlight,
     } = req.body;
     const files = req.files || {};
 
@@ -96,6 +91,7 @@ export const updateProject = async (req, res) => {
       price: Number(price) || project.price,
       description: description || project.description,
       amenities: amenities ? JSON.parse(amenities) : project.amenities,
+      highlight: highlight ? JSON.parse(highlight) : project.highlight,
     };
 
     // Handle file updates
@@ -154,6 +150,19 @@ export const updateProject = async (req, res) => {
       updatedData.brochure = project.brochure;
     }
 
+    if (files.bannerImage) {
+      if (project.bannerImage)
+        fs.unlink(
+          path.join(__dirname, "../", project.bannerImage),
+          (err) => err && console.error(err)
+        );
+      updatedData.bannerImage = `uploads/projects/${path.basename(
+        files.bannerImage[0].path
+      )}`;
+    } else {
+      updatedData.bannerImage = project.bannerImage;
+    }
+
     const updatedProject = await Project.findByIdAndUpdate(
       req.params.id,
       updatedData,
@@ -168,6 +177,8 @@ export const updateProject = async (req, res) => {
   }
 };
 
+//Controller for Delete Project data from database
+
 export const deleteProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
@@ -178,6 +189,7 @@ export const deleteProject = async (req, res) => {
       ...project.floorPlan,
       ...project.sitePlan,
       project.brochure,
+      project.bannerImage,
     ]
       .filter(Boolean)
       .forEach((file) =>
@@ -189,6 +201,34 @@ export const deleteProject = async (req, res) => {
 
     await Project.findByIdAndDelete(req.params.id);
     res.json({ message: "Project deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+//Controller for Get Project data
+export const getProjects = async (req, res) => {
+  try {
+    const projects = await Project.find()
+      .populate("builder", "name")
+      .populate("type", "name")
+      .populate("status", "text")
+      .sort({ createdAt: -1 });
+    res.json(projects);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+//Controller for individual Get Project data
+export const getProjectById = async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id)
+      .populate("builder", "name")
+      .populate("type", "name")
+      .populate("status", "text");
+    if (!project) return res.status(404).json({ message: "Project not found" });
+    res.json(project);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
