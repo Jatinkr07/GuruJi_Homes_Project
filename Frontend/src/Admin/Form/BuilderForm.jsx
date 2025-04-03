@@ -3,7 +3,6 @@ import { Modal, Form, Input, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import { API_URL } from "../../services/api";
-import path from "path";
 
 const BuilderForm = ({ visible, onCancel, initialValues, onFinish }) => {
   const [form] = Form.useForm();
@@ -13,10 +12,11 @@ const BuilderForm = ({ visible, onCancel, initialValues, onFinish }) => {
     if (initialValues) {
       form.setFieldsValue(initialValues);
       if (initialValues.image) {
+        const fileName = initialValues.image.split("/").pop();
         setFileList([
           {
             uid: "-1",
-            name: path.basename(initialValues.image),
+            name: fileName,
             status: "done",
             url: `${API_URL}/${initialValues.image}`,
           },
@@ -28,25 +28,35 @@ const BuilderForm = ({ visible, onCancel, initialValues, onFinish }) => {
     }
   }, [initialValues, form]);
 
-  const handleUploadChange = ({ fileList: newFileList }) =>
-    setFileList(
-      newFileList.map((file) => ({
-        ...file,
-        originFileObj: file.originFileObj || file,
-      }))
-    );
+  const handleUploadChange = ({ fileList: newFileList }) => {
+    setFileList(newFileList.slice(-1)); // Keep only the latest file
+    console.log("Updated fileList:", newFileList); // Debug log
+  };
 
   const handleFinish = (values) => {
     const formData = new FormData();
     formData.append("name", values.name);
+
     if (fileList.length > 0 && fileList[0].originFileObj) {
       formData.append("image", fileList[0].originFileObj);
+    } else if (!initialValues) {
+      console.log("No image selected for new builder"); // Debug log
     }
+
+    // Debug: Log FormData contents
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}:`, pair[1]);
+    }
+
     if (initialValues?._id) {
-      formData.append("id", initialValues._id);
+      onFinish(formData, initialValues._id);
+    } else {
+      onFinish(formData);
     }
-    console.log("FormData being sent:", Array.from(formData.entries()));
-    onFinish(formData);
+  };
+
+  const customRequest = ({ onSuccess }) => {
+    setTimeout(() => onSuccess("ok"), 0);
   };
 
   return (
@@ -65,17 +75,22 @@ const BuilderForm = ({ visible, onCancel, initialValues, onFinish }) => {
           <Input placeholder="Enter builder name" />
         </Form.Item>
         <Form.Item
+          name="image"
           label="Builder Image"
           rules={[
-            { required: !initialValues, message: "Please upload an image" },
+            {
+              required: !initialValues, // Required only for new builders
+              message: "Please upload an image",
+            },
           ]}
         >
           <Upload
+            customRequest={customRequest}
             onChange={handleUploadChange}
             fileList={fileList}
-            beforeUpload={() => false}
             listType="picture-card"
             maxCount={1}
+            accept="image/*"
           >
             {fileList.length === 0 && (
               <div>

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/jsx-key */
 /* eslint-disable react/prop-types */
 // src/Admin/Form/ProjectsForm.jsx
@@ -64,6 +65,7 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
           name: `image-${i}`,
           status: "done",
           url: `${API_URL}/${img}`,
+          path: img,
         })) || []
       );
       setFloorPlanList(
@@ -72,6 +74,7 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
           name: `floorPlan-${i}`,
           status: "done",
           url: `${API_URL}/${fp.image}`,
+          path: fp.image,
           text: fp.text,
         })) || []
       );
@@ -82,6 +85,7 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
           name: `sitePlan-${i}`,
           status: "done",
           url: `${API_URL}/${sp}`,
+          path: sp,
         })) || []
       );
       setBrochureList(
@@ -92,6 +96,7 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
                 name: "brochure",
                 status: "done",
                 url: `${API_URL}/${initialValues.brochure}`,
+                path: initialValues.brochure,
               },
             ]
           : []
@@ -104,6 +109,7 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
                 name: "banner",
                 status: "done",
                 url: `${API_URL}/${initialValues.bannerImage}`,
+                path: initialValues.bannerImage,
               },
             ]
           : []
@@ -124,14 +130,16 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
 
   const handleFileChange =
     (setList) =>
-    ({ fileList: newFileList }) =>
+    ({ fileList: newFileList }) => {
       setList(
         newFileList.map((file) => ({
           ...file,
-          originFileObj: file.originFileObj || file,
+          originFileObj: file.originFileObj || undefined,
+          path: file.path || undefined,
           text: file.text || "",
         }))
       );
+    };
 
   const handleFloorPlanTextChange = (index, value) => {
     const newFloorPlanText = [...floorPlanText];
@@ -152,6 +160,7 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
   const removeHighlight = (index) =>
     setHighlights(highlights.filter((_, i) => i !== index));
 
+  // src/Admin/Form/ProjectsForm.jsx (only showing handleFinish for brevity)
   const handleFinish = (values) => {
     const formData = new FormData();
     formData.append("title", values.title);
@@ -163,26 +172,74 @@ const ProjectsForm = ({ visible, onCancel, initialValues, onFinish }) => {
     formData.append("description", values.description);
     formData.append("amenities", JSON.stringify(selectedAmenities));
     formData.append("highlight", JSON.stringify(highlights));
-    formData.append("floorPlanText", JSON.stringify(floorPlanText)); // Send captions
+    formData.append("floorPlanText", JSON.stringify(floorPlanText));
 
-    imageList.forEach(
-      (file) =>
-        file.originFileObj && formData.append("images", file.originFileObj)
-    );
-    floorPlanList.forEach(
-      (file) =>
-        file.originFileObj && formData.append("floorPlan", file.originFileObj)
-    );
-    sitePlanList.forEach(
-      (file) =>
-        file.originFileObj && formData.append("sitePlan", file.originFileObj)
-    );
-    if (brochureList[0]?.originFileObj)
-      formData.append("brochure", brochureList[0].originFileObj);
-    if (bannerImageList[0]?.originFileObj)
-      formData.append("bannerImage", bannerImageList[0].originFileObj);
+    // Images
+    const existingImages = imageList
+      .filter((file) => !file.originFileObj)
+      .map((file) => file.path);
+    formData.append("existingImages", JSON.stringify(existingImages));
+    const newImages = imageList.filter((file) => file.originFileObj);
+    newImages.forEach((file, index) => {
+      formData.append("images", file.originFileObj);
+      console.log(`Appending image ${index}: ${file.originFileObj.name}`);
+    });
+
+    // Floor Plans
+    const existingFloorPlans = floorPlanList
+      .filter((file) => !file.originFileObj)
+      .map((file) => ({ image: file.path, text: file.text }));
+    formData.append("existingFloorPlan", JSON.stringify(existingFloorPlans));
+    const newFloorPlans = floorPlanList.filter((file) => file.originFileObj);
+    newFloorPlans.forEach((file, index) => {
+      formData.append("floorPlan", file.originFileObj);
+      console.log(`Appending floorPlan ${index}: ${file.originFileObj.name}`);
+    });
+
+    // Site Plans
+    const existingSitePlans = sitePlanList
+      .filter((file) => !file.originFileObj)
+      .map((file) => file.path);
+    formData.append("existingSitePlan", JSON.stringify(existingSitePlans));
+    const newSitePlans = sitePlanList.filter((file) => file.originFileObj);
+    newSitePlans.forEach((file, index) => {
+      formData.append("sitePlan", file.originFileObj);
+      console.log(`Appending sitePlan ${index}: ${file.originFileObj.name}`);
+    });
+
+    // Brochure
+    const existingBrochure = brochureList[0]?.path;
+    const newBrochure = brochureList.filter((file) => file.originFileObj);
+    if (newBrochure.length > 0) {
+      formData.append("brochure", newBrochure[0].originFileObj);
+      console.log(`Appending brochure: ${newBrochure[0].originFileObj.name}`);
+    }
+    if (existingBrochure) {
+      formData.append("existingBrochure", existingBrochure);
+    }
+
+    // Banner Image
+    const existingBannerImage = bannerImageList[0]?.path;
+    const newBannerImage = bannerImageList.filter((file) => file.originFileObj);
+    if (newBannerImage.length > 0) {
+      formData.append("bannerImage", newBannerImage[0].originFileObj);
+      console.log(
+        `Appending bannerImage: ${newBannerImage[0].originFileObj.name}`
+      );
+    }
+    if (existingBannerImage) {
+      formData.append("existingBannerImage", existingBannerImage);
+    }
 
     if (initialValues?._id) formData.append("id", initialValues._id);
+
+    // Debug FormData
+    for (let [key, value] of formData.entries()) {
+      console.log(
+        `FormData ${key}:`,
+        value instanceof File ? value.name : value
+      );
+    }
 
     onFinish(formData);
   };

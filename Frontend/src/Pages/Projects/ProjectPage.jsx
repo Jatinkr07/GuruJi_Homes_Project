@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Input, Select, Pagination, Button } from "antd";
 import { SearchOutlined, DownOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { fetchProjects, API_URL } from "../../services/api.js";
+import { fetchProjects, API_URL } from "../../services/api";
 import ProjectCard from "./ProjectCard";
 import { CircleLoader } from "react-spinners";
+import { useSearchParams } from "react-router-dom";
 
 export default function ProjectPage() {
+  const [searchParams] = useSearchParams();
+  const urlType = searchParams.get("type");
+
   const [searchValue, setSearchValue] = useState("");
   const [newLaunchesOnly, setNewLaunchesOnly] = useState(false);
   const [propertyType, setPropertyType] = useState(null);
@@ -19,6 +23,12 @@ export default function ProjectPage() {
     queryKey: ["projects"],
     queryFn: fetchProjects,
   });
+
+  useEffect(() => {
+    if (urlType) {
+      setPropertyType(urlType);
+    }
+  }, [urlType]);
 
   const projectData =
     projects?.map((project) => ({

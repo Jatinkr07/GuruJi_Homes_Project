@@ -1,46 +1,60 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-
-const cards = [
-  {
-    id: 1,
-    title: "Residential",
-    image: "/G-01.jpg",
-    color: "bg-gradient-to-t from-gray-800 to-gray-50",
-    description: "Innovative living spaces tailored to your lifestyle",
-  },
-  {
-    id: 2,
-    title: "Commercial",
-    image: "/G-2.jpg",
-    color: "bg-gradient-to-t from-gray-800 to-gray-50",
-    description: "Dynamic business environments for success",
-  },
-  {
-    id: 3,
-    title: "Industrial",
-    image: "/G-3.jpg",
-    color: "bg-gradient-to-t from-gray-800 to-gray-50",
-    description: "Robust solutions for industrial efficiency",
-  },
-  {
-    id: 4,
-    title: "Institutional",
-    image: "/G-4.jpg",
-    color: "bg-gradient-to-t from-gray-800 to-gray-50",
-    description: "Purpose-built facilities for communities",
-  },
-  {
-    id: 5,
-    title: "Recreational",
-    image: "/G-5.jpg",
-    color: "bg-gradient-to-t from-gray-800 to-gray-50",
-    description: "Spaces designed for leisure and enjoyment",
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { fetchTypes, API_URL } from "../../services/api";
+import { useNavigate } from "react-router-dom";
 
 export default function Banner() {
   const [expandedIndex, setExpandedIndex] = useState(0);
+  const navigate = useNavigate();
+
+  const {
+    data: types,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["types"],
+    queryFn: fetchTypes,
+  });
+
+  const handleLearnMore = (typeName) => {
+    navigate(`/explore/projects?type=${encodeURIComponent(typeName)}`);
+  };
+
+  const cards = types
+    ? types.map((type, index) => {
+        const imagePath = type.image ? type.image.replace(/\\/g, "/") : "";
+        const imageUrl = imagePath
+          ? `${API_URL}/${imagePath}`
+          : "/fallback-image.jpg";
+        return {
+          id: type._id || index + 1,
+          title: type.name,
+          image: imageUrl,
+          color: "bg-gradient-to-t from-gray-800 to-gray-50",
+          description:
+            type.description ||
+            `Explore our ${type.name.toLowerCase()} offerings`,
+        };
+      })
+    : [];
+
+  if (isLoading) {
+    return (
+      <div className="w-full py-12 bg-gray-100 flex items-center justify-center h-[400px] sm:h-[450px] md:h-[550px] lg:h-[650px]">
+        <p className="text-lg text-gray-600">Loading types...</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="w-full py-12 bg-gray-100 flex items-center justify-center h-[400px] sm:h-[450px] md:h-[550px] lg:h-[650px]">
+        <p className="text-lg text-red-600">Error: {error.message}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full py-12 overflow-hidden bg-gray-100">
@@ -52,7 +66,7 @@ export default function Banner() {
               expandedIndex === index ? "flex-[3]" : "flex-[0.7]"
             }`}
             onHoverStart={() => setExpandedIndex(index)}
-            onHoverEnd={() => setExpandedIndex(0)} // Return to first card on hover end
+            onHoverEnd={() => setExpandedIndex(0)}
             initial={{ flex: index === 0 ? 3 : 0.7 }}
             animate={{
               flex: expandedIndex === index ? 3 : 0.7,
@@ -71,7 +85,6 @@ export default function Banner() {
               transition={{ duration: 0.8 }}
             />
 
-            {/* Overlay */}
             <motion.div
               className="absolute inset-0 bg-black"
               initial={{ opacity: 0.5 }}
@@ -127,6 +140,7 @@ export default function Banner() {
                   transition={{ duration: 0.4, delay: 0.4 }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={() => handleLearnMore(card.title)}
                 >
                   Learn More
                 </motion.button>
@@ -149,19 +163,6 @@ export default function Banner() {
           </motion.div>
         ))}
       </div>
-
-      {/* <div className="flex justify-center mt-10">
-        <Link to="/projects">
-          <motion.button
-            className="px-6 py-3 font-medium text-white bg-black border-2 border-black hover:bg-white hover:text-black focus:outline-none focus:ring-2 focus:ring-black/50"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-          >
-            View More
-          </motion.button>
-        </Link>
-      </div> */}
     </div>
   );
 }

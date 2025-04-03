@@ -12,26 +12,26 @@ export const createType = async (req, res) => {
   try {
     const { name } = req.body;
     const files = req.files || {};
-    const typeData = { name };
 
-    if (files.image && files.image[0]) {
-      typeData.image = files.image[0].path; // Use relative path from Uploads
+    if (!name) {
+      return res.status(400).json({ message: "Name is required" });
     }
+    if (!files.image || !files.image[0]) {
+      return res
+        .status(400)
+        .json({ message: "Image is required for new type" });
+    }
+
+    const typeData = {
+      name,
+      image: files.image[0].path,
+    };
 
     const type = new Type(typeData);
     const savedType = await type.save();
     res.status(201).json(savedType);
   } catch (error) {
     res.status(400).json({ message: error.message });
-  }
-};
-
-export const getTypes = async (req, res) => {
-  try {
-    const types = await Type.find().sort({ createdAt: -1 });
-    res.json(types);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
 };
 
@@ -51,7 +51,9 @@ export const updateType = async (req, res) => {
           await fsPromises.unlink(oldImagePath);
         }
       }
-      updatedData.image = files.image[0].path; // Use relative path
+      updatedData.image = files.image[0].path;
+    } else {
+      updatedData.image = type.image; // Retain existing image if no new one is uploaded
     }
 
     const updatedType = await Type.findByIdAndUpdate(
@@ -62,6 +64,15 @@ export const updateType = async (req, res) => {
     res.json(updatedType);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+export const getTypes = async (req, res) => {
+  try {
+    const types = await Type.find().sort({ createdAt: -1 });
+    res.json(types);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 

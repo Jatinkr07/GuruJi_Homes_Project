@@ -1,13 +1,21 @@
 import { motion, useScroll } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { fetchTypes } from "../../services/api";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Navbar() {
   const { scrollY } = useScroll();
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [projectsOpen, setProjectsOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const { data: types } = useQuery({
+    queryKey: ["types"],
+    queryFn: fetchTypes,
+  });
 
   useEffect(() => {
     return scrollY.onChange((latest) => {
@@ -23,13 +31,11 @@ export default function Navbar() {
     setProjectsOpen((prev) => !prev);
   };
 
-  const projectItems = [
-    { name: "Residential", path: "/projects/project1" },
-    { name: "Commercial", path: "/projects/project2" },
-    { name: "Industrial", path: "/projects/project3" },
-    { name: "OnGoing", path: "/projects/project3" },
-    { name: "Completed", path: "/projects/project3" },
-  ];
+  const handleTypeSelect = (typeName) => {
+    navigate(`/explore/projects?type=${encodeURIComponent(typeName)}`);
+    setMenuOpen(false);
+    setProjectsOpen(false);
+  };
 
   return (
     <motion.header
@@ -70,14 +76,14 @@ export default function Navbar() {
             </div>
             {/* Dropdown Menu */}
             <div className="absolute left-0 invisible w-48 mt-2 overflow-hidden transition-all duration-200 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 group-hover:visible">
-              {projectItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  className="block px-4 py-2 text-sm text-black transition-all hover:bg-gray-100 hover:border-l-4 hover:border-gray-400"
+              {types?.map((type) => (
+                <button
+                  key={type._id}
+                  onClick={() => handleTypeSelect(type.name)}
+                  className="block w-full px-4 py-2 text-sm text-left text-black transition-all hover:bg-gray-100 hover:border-l-4 hover:border-gray-400"
                 >
-                  {item.name}
-                </Link>
+                  {type.name}
+                </button>
               ))}
             </div>
           </div>
@@ -143,15 +149,14 @@ export default function Navbar() {
               </button>
               {projectsOpen && (
                 <div className="flex flex-col mt-2 space-y-2">
-                  {projectItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      to={item.path}
+                  {types?.map((type) => (
+                    <button
+                      key={type._id}
+                      onClick={() => handleTypeSelect(type.name)}
                       className="w-full py-1 text-sm text-center text-black transition-all hover:text-gray-300 hover:border-r-4 hover:border-gray-400"
-                      onClick={toggleMenu}
                     >
-                      {item.name}
-                    </Link>
+                      {type.name}
+                    </button>
                   ))}
                 </div>
               )}

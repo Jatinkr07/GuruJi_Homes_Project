@@ -3,7 +3,6 @@ import { Modal, Form, Input, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import { API_URL } from "../../services/api";
-import path from "path";
 
 const TypeForm = ({ visible, onCancel, initialValues, onFinish }) => {
   const [form] = Form.useForm();
@@ -13,10 +12,12 @@ const TypeForm = ({ visible, onCancel, initialValues, onFinish }) => {
     if (initialValues) {
       form.setFieldsValue(initialValues);
       if (initialValues.image) {
+        // Extract filename from the image path using string split
+        const fileName = initialValues.image.split("/").pop();
         setFileList([
           {
             uid: "-1",
-            name: path.basename(initialValues.image),
+            name: fileName,
             status: "done",
             url: `${API_URL}/${initialValues.image}`,
           },
@@ -28,24 +29,27 @@ const TypeForm = ({ visible, onCancel, initialValues, onFinish }) => {
     }
   }, [initialValues, form]);
 
-  const handleUploadChange = ({ fileList: newFileList }) =>
-    setFileList(
-      newFileList.map((file) => ({
-        ...file,
-        originFileObj: file.originFileObj || file,
-      }))
-    );
+  const handleUploadChange = ({ fileList: newFileList }) => {
+    setFileList(newFileList.slice(-1)); // Keep only the latest file
+  };
 
   const handleFinish = (values) => {
     const formData = new FormData();
     formData.append("name", values.name);
+
     if (fileList.length > 0 && fileList[0].originFileObj) {
       formData.append("image", fileList[0].originFileObj);
     }
+
     if (initialValues?._id) {
-      formData.append("id", initialValues._id);
+      onFinish(formData, initialValues._id);
+    } else {
+      onFinish(formData);
     }
-    onFinish(formData);
+  };
+
+  const customRequest = ({ onSuccess }) => {
+    setTimeout(() => onSuccess("ok"), 0);
   };
 
   return (
@@ -64,17 +68,22 @@ const TypeForm = ({ visible, onCancel, initialValues, onFinish }) => {
           <Input placeholder="Enter type name" />
         </Form.Item>
         <Form.Item
+          name="image"
           label="Type Image"
           rules={[
-            { required: !initialValues, message: "Please upload an image" },
+            {
+              required: !initialValues,
+              message: "Please upload an image",
+            },
           ]}
         >
           <Upload
+            customRequest={customRequest}
             onChange={handleUploadChange}
             fileList={fileList}
-            beforeUpload={() => false}
             listType="picture-card"
             maxCount={1}
+            accept="image/*"
           >
             {fileList.length === 0 && (
               <div>

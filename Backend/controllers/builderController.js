@@ -12,36 +12,31 @@ export const createBuilder = async (req, res) => {
   try {
     const { name } = req.body;
     const files = req.files || {};
-    console.log("req.files in createBuilder:", files); // Debug log
 
-    const builderData = { name };
+    console.log("createBuilder - req.body:", req.body, "req.files:", req.files); // Debug log
 
-    if (files.image && files.image[0]) {
-      builderData.image = files.image[0].path; // Store relative path
-      console.log(`Saving builder image path: ${builderData.image}`);
-    } else {
-      console.log("No image provided for builder creation");
+    if (!name) {
+      return res.status(400).json({ message: "Name is required" });
     }
+    if (!files.image || !files.image[0]) {
+      return res
+        .status(400)
+        .json({ message: "Image is required for new builder" });
+    }
+
+    const builderData = {
+      name,
+      image: files.image[0].path,
+    };
 
     const builder = new Builder(builderData);
     const savedBuilder = await builder.save();
-    console.log("Saved builder:", savedBuilder); // Debug log
     res.status(201).json(savedBuilder);
   } catch (error) {
     console.error("Error in createBuilder:", error);
     res.status(400).json({ message: error.message });
   }
 };
-
-export const getBuilders = async (req, res) => {
-  try {
-    const builders = await Builder.find().sort({ createdAt: -1 });
-    res.json(builders);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 export const updateBuilder = async (req, res) => {
   try {
     const builder = await Builder.findById(req.params.id);
@@ -56,11 +51,11 @@ export const updateBuilder = async (req, res) => {
         const oldImagePath = path.join(__dirname, "../", builder.image);
         if (fs.existsSync(oldImagePath)) {
           await fsPromises.unlink(oldImagePath);
-          console.log(`Deleted old builder image: ${oldImagePath}`);
         }
       }
-      updatedData.image = files.image[0].path; // Store new relative path
-      console.log(`Updating builder image path: ${updatedData.image}`);
+      updatedData.image = files.image[0].path;
+    } else {
+      updatedData.image = builder.image;
     }
 
     const updatedBuilder = await Builder.findByIdAndUpdate(
@@ -70,8 +65,16 @@ export const updateBuilder = async (req, res) => {
     );
     res.json(updatedBuilder);
   } catch (error) {
-    console.error("Error in updateBuilder:", error);
     res.status(400).json({ message: error.message });
+  }
+};
+
+export const getBuilders = async (req, res) => {
+  try {
+    const builders = await Builder.find().sort({ createdAt: -1 });
+    res.json(builders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 

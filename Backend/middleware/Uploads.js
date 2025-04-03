@@ -1,4 +1,3 @@
-// middleware/Uploads.js
 import busboy from "busboy";
 import path from "path";
 import fs from "fs";
@@ -10,23 +9,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const uploadPaths = {
-  builder: path.join(__dirname, "../uploads/builder"),
-  type: path.join(__dirname, "../uploads/type"),
+  builders: path.join(__dirname, "../uploads/builders"),
+  types: path.join(__dirname, "../uploads/types"),
   status: path.join(__dirname, "../uploads/status"),
   projects: path.join(__dirname, "../uploads/projects"),
 };
 
-const createUploadDir = async (dir) => {
-  try {
-    await fsPromises.mkdir(dir, { recursive: true });
-  } catch (err) {
-    console.error(`Failed to create directory ${dir}:`, err);
-  }
-};
-
-Promise.all(Object.values(uploadPaths).map(createUploadDir)).catch((err) =>
-  console.error("Directory creation failed:", err)
-);
+Object.values(uploadPaths).forEach(async (dir) => {
+  await fsPromises
+    .mkdir(dir, { recursive: true })
+    .catch((err) => console.error(`Failed to create directory ${dir}:`, err));
+});
 
 const supportedImageTypes = [
   "image/jpeg",
@@ -42,105 +35,89 @@ const Uploads = (req, res, next) => {
 
   const bb = busboy({
     headers: req.headers,
-    limits: { fileSize: 10 * 1024 * 1024, files: 100 },
+    limits: { fileSize: 10 * 1024 * 1024 },
   });
 
   req.body = {};
   req.files = {};
 
+  const getEntityFromPath = (path) => {
+    if (path.startsWith("/builders")) return "builders";
+    if (path.startsWith("/types")) return "types";
+    if (path.startsWith("/status")) return "status";
+    return "projects";
+  };
+
+  const filePromises = [];
+
   bb.on("file", (fieldname, file, info) => {
     const { filename, mimeType } = info;
-
-    const normalizedPath = req.path
-      .toLowerCase()
-      .split("?")[0]
-      .replace(/\/$/, "");
-    const entity =
-      Object.keys(uploadPaths).find((key) =>
-        normalizedPath.startsWith(`/${key}s`)
-      ) || "projects";
-
+    const entity = getEntityFromPath(req.path.toLowerCase());
     const uploadDir = uploadPaths[entity];
+
+    if (!uploadDir) {
+      file.resume();
+      return next(new Error("Invalid upload directory"));
+    }
+
     const uniqueName = `${Date.now()}-${filename.replace(/\s+/g, "-")}`;
     const saveTo = path.join(uploadDir, uniqueName);
-    const tempPath = path.join(uploadDir, `temp-${uniqueName}`);
 
     const fileData = {
       fieldname,
       originalname: filename,
       mimetype: mimeType,
-      path: path.relative(path.join(__dirname, "../"), saveTo), // Relative path
+      path: path.relative(path.join(__dirname, "../"), saveTo),
       size: 0,
     };
 
-    console.log(
-      `Uploading to: ${entity}, Path: ${saveTo}, MIME: ${mimeType}, Field: ${fieldname}`
-    );
-
-    const isImage = supportedImageTypes.includes(mimeType);
-    const writeStream = fs.createWriteStream(tempPath);
-
-    if (isImage) {
-      let shouldProcessWithSharp = true;
-      file.pipe(writeStream);
-
-      file.on("end", async () => {
-        try {
-          const metadata = await sharp(tempPath)
-            .metadata()
-            .catch((err) => {
-              console.warn(
-                `Invalid image format for ${filename}:`,
-                err.message
-              );
-              shouldProcessWithSharp = false;
-            });
-
-          if (shouldProcessWithSharp && metadata) {
-            await sharp(tempPath)
+    const writeStream = fs.createWriteStream(saveTo);
+    const filePromise = new Promise((resolve, reject) => {
+      if (supportedImageTypes.includes(mimeType)) {
+        file
+          .pipe(
+            sharp()
               .resize({ width: 1200, withoutEnlargement: true })
               .jpeg({ quality: 80 })
-              .toFile(saveTo);
-            await fsPromises.unlink(tempPath);
-          } else {
-            await fsPromises.rename(tempPath, saveTo); // Fixed typo here
-          }
+          )
+          .pipe(writeStream);
+      } else if (mimeType === "application/pdf" && fieldname === "brochure") {
+        file.pipe(writeStream);
+      } else {
+        file.resume();
+        resolve();
+        return;
+      }
 
-          req.files[fieldname] = req.files[fieldname] || [];
-          req.files[fieldname].push(fileData);
-        } catch (err) {
-          console.error(`Error processing ${filename}:`, err);
-          await fsPromises.unlink(tempPath).catch(() => {});
-          if (fs.existsSync(tempPath)) {
-            await fsPromises.rename(tempPath, saveTo); // Fixed typo here
-            req.files[fieldname] = req.files[fieldname] || [];
-            req.files[fieldname].push(fileData);
-          }
-        }
-      });
-    } else {
-      file.pipe(writeStream);
-      file.on("end", async () => {
-        await fsPromises.rename(tempPath, saveTo); // Fixed typo here
+      writeStream.on("finish", () => {
         req.files[fieldname] = req.files[fieldname] || [];
         req.files[fieldname].push(fileData);
+        resolve();
       });
-    }
+      writeStream.on("error", (err) => {
+        console.error(`Error writing file ${filename}:`, err);
+        reject(err);
+      });
+    });
+    filePromises.push(filePromise);
 
     file.on("data", (data) => (fileData.size += data.length));
-    file.on("error", (err) => {
-      console.error(`File stream error for ${filename}:`, err);
-      fsPromises.unlink(tempPath).catch(() => {});
-    });
+    file.on("error", (err) =>
+      console.error(`File stream error for ${filename}:`, err)
+    );
   });
 
   bb.on("field", (name, value) => {
     req.body[name] = value;
   });
 
-  bb.on("finish", () => {
-    console.log("Busboy finished, req.files:", req.files);
-    next();
+  bb.on("finish", async () => {
+    try {
+      await Promise.all(filePromises);
+      next();
+    } catch (err) {
+      next(err);
+    }
   });
 
   bb.on("error", (err) => {
