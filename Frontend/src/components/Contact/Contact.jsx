@@ -124,11 +124,13 @@ export default function Contact() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <img
-              src="/G-4.jpg"
-              alt="Dream Home"
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3508.858645853316!2d77.3437462!3d28.3906555!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjguMzkwNjU1LCA3Ny4zNDYzMjE!5e0!3m2!1sen!2sus!4v1620000000000"
               className="object-cover w-full h-full rounded-b-lg md:rounded-r-lg md:rounded-bl-none"
-            />
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
           </motion.div>
         </div>
       </div>

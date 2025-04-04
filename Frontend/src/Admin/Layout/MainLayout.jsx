@@ -44,7 +44,7 @@ const MainLayout = () => {
       icon: <AppstoreOutlined />,
       label: "Status",
     },
-    { key: "/admin/products", icon: <ShoppingOutlined />, label: "Products" },
+    { key: "/admin/products", icon: <ShoppingOutlined />, label: "Projects" },
   ];
 
   const handleLogout = async () => {

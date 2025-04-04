@@ -82,7 +82,7 @@ export default function VisionSection() {
             <img
               src="/Vision.jpg"
               alt="Modern "
-              className="h-full transition-transform lg:max-w-4xl rounded-xl hover:scale-105"
+              className="h-full transition-transform lg:max-w-3xl rounded-xl hover:scale-105"
             />
           </motion.div>
         </div>
