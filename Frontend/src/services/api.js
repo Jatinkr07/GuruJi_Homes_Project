@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const API_URL = "https://guruji-homes-project-01.onrender.com";
+export const API_URL = "http://localhost:4008";
 
 const api = axios.create({
   baseURL: API_URL,
