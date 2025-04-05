@@ -149,3 +149,40 @@ export const deleteProject = async (id) =>
   (await api.delete(`/api/projects/${id}`)).data;
 
 // Project APIs End----------------
+
+//Form Submission for contact and Enquiry Api's Start---
+export const submitEnquiry = async (data) => {
+  const response = await axios.post(`${API_URL}/api/enquiries`, data);
+  return response.data;
+};
+
+export const getEnquiries = async ({ page, limit }) => {
+  const { data } = await axios.get(`${API_URL}/api/enquiries`, {
+    params: { page, limit },
+  });
+  return data;
+};
+
+export const deleteEnquiry = async (id) => {
+  const response = await axios.delete(`${API_URL}/api/enquiries/${id}`);
+  return response.data;
+};
+
+export const submitContact = async (data) => {
+  const response = await axios.post(`${API_URL}/api/contacts`, data);
+  return response.data;
+};
+
+export const getContacts = async ({ page, limit }) => {
+  const { data } = await axios.get(`${API_URL}/api/contacts`, {
+    params: { page, limit },
+  });
+  return data;
+};
+
+export const deleteContact = async (id) => {
+  const response = await axios.delete(`${API_URL}/api/contacts/${id}`);
+  return response.data;
+};
+
+//Form Submission for contact and Enquiry Api's End---

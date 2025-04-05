@@ -7,6 +7,8 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import builderRoutes from "./routes/builderRoutes.js";
 import projectsRoutes from "./routes/projectsRoutes.js";
+import enquiryRoutes from "./routes/enquiryRoutes.js";
+import contactRoutes from "./routes/contactRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -40,6 +42,8 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api", builderRoutes);
 app.use("/api/projects", projectsRoutes);
+app.use("/api/enquiries", enquiryRoutes);
+app.use("/api/contacts", contactRoutes);
 
 const PORT = process.env.PORT || 4008;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

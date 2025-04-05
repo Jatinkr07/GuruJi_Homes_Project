@@ -18,6 +18,8 @@ import Builders from "./Admin/pages/Builders.jsx";
 import Types from "./Admin/pages/Types.jsx";
 import Statuses from "./Admin/pages/Statuses.jsx";
 import ProjectsTable from "./Admin/pages/ProjectsTable.jsx";
+import Enquiry from "./Admin/pages/Enquiry/Enquiry.jsx";
+import Contacts from "./Admin/pages/Contact/Contact.jsx";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -58,6 +60,8 @@ const App = () => {
             <Route path="types" element={<Types />} />
             <Route path="status" element={<Statuses />} />
             <Route path="products" element={<ProjectsTable />} />
+            <Route path="enquiry" element={<Enquiry />} />
+            <Route path="contact" element={<Contacts />} />
             <Route
               path="*"
               element={<Navigate to="/admin/dashboard" replace />}

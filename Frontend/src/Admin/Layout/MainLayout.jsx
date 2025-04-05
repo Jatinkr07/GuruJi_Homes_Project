@@ -5,10 +5,14 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   DashboardOutlined,
-  AppstoreOutlined,
   ShoppingOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
+import { RiContactsLine } from "react-icons/ri";
+import { MdContactSupport } from "react-icons/md";
+import { SiElectronbuilder } from "react-icons/si";
+import { SiAnytype } from "react-icons/si";
+import { TbStatusChange } from "react-icons/tb";
 import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 
@@ -31,20 +35,22 @@ const MainLayout = () => {
     },
     {
       key: "/admin/builder",
-      icon: <AppstoreOutlined />,
+      icon: <SiElectronbuilder />,
       label: "Builder",
     },
     {
       key: "/admin/types",
-      icon: <AppstoreOutlined />,
+      icon: <SiAnytype />,
       label: "Types",
     },
     {
       key: "/admin/status",
-      icon: <AppstoreOutlined />,
+      icon: <TbStatusChange />,
       label: "Status",
     },
     { key: "/admin/products", icon: <ShoppingOutlined />, label: "Projects" },
+    { key: "/admin/enquiry", icon: <MdContactSupport />, label: "Enquiry" },
+    { key: "/admin/contact", icon: <RiContactsLine />, label: "Contact" },
   ];
 
   const handleLogout = async () => {
