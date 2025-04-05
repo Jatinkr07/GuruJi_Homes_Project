@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import { promises as fsPromises } from "fs";
 import { fileURLToPath } from "url";
+import sharp from "sharp";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,7 +35,7 @@ const Uploads = (req, res, next) => {
 
   const bb = busboy({
     headers: req.headers,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    limits: { fileSize: 10 * 1024 * 1024 },
   });
 
   req.body = {};
@@ -72,11 +73,15 @@ const Uploads = (req, res, next) => {
 
     const writeStream = fs.createWriteStream(saveTo);
     const filePromise = new Promise((resolve, reject) => {
-      // Handle both images and PDFs without modification
-      if (
-        supportedImageTypes.includes(mimeType) ||
-        (mimeType === "application/pdf" && fieldname === "brochure")
-      ) {
+      if (supportedImageTypes.includes(mimeType)) {
+        file
+          .pipe(
+            sharp()
+              .resize({ width: 1200, withoutEnlargement: true })
+              .jpeg({ quality: 80 })
+          )
+          .pipe(writeStream);
+      } else if (mimeType === "application/pdf" && fieldname === "brochure") {
         file.pipe(writeStream);
       } else {
         file.resume();
